@@ -3,12 +3,16 @@ DSCR_Application
 
 PowerShell DSC Resource to Install / Uninstall Windows Desktop Applications.
 
-----
+## Install
+You can install Resource through [PowerShell Gallery](https://www.powershellgallery.com/packages/DSCR_Application/).
+```Powershell
+Install-Module -Name DSCR_Application
+```
+
 ## Resources
 * **cApplication**
 DSC Resource to Install / Uninstall Windows Desktop Applications. It is easier to use and more flexible compared to the built-in "Package" resource.
 
-----
 ## Properties
 
 There are many properties, but most are optional.
