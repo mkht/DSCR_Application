@@ -89,7 +89,7 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
     + Copied files will delete automatically after installation finished.
 
 + **[string] PreCopyTo** (Write): 
-    + The path of the directory which the file specified by `PreCopyTo` is saved.
+    + The path of the directory which the file specified by `PreCopyFrom` is saved.
 
 ----
 ## Examples
