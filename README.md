@@ -146,5 +146,5 @@ Configuration Example3
 
 ---
 ## ChangeLog
-### Unreleased
+### 2.3.0
  + Fix failure of file download when `InstallerPath` is not a direct link [#1](https://github.com/mkht/DSCR_Application/issues/1)

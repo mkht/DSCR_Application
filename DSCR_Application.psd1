@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # このモジュールのバージョン番号です。
-ModuleVersion = '2.2.1'
+ModuleVersion = '2.3.0'
 
 # サポートされている PSEditions
 # CompatiblePSEditions = @()
@@ -113,7 +113,7 @@ PrivateData = @{
         # ExternalModuleDependencies = ''
 
     } # End of PSData hashtable
-    
+
  } # End of PrivateData hashtable
 
 # このモジュールの HelpInfo URI
