@@ -21,21 +21,21 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
 ### cApplication
 + **[string] Ensure** (Write):
     + Specifies whether or not the application should be installed or not.
-    + The default value is Present. { Present | Absent }.
+    + The default value is `Present`. { Present | Absent }.
 
 + **[string] Name** (key):
     + The name of the application that should be installed or uninstalled. You can confirm an accurate name of the application from "Programs and Features" in the control panel.
 
 + **[bool] Fuzzy** (Write):
-    + If specified this property as `$true`, you can use regular expressions in the `Name` property. 
+    + If specified this property as `$true`, you can use regular expressions in the `Name` property.
     + The default value is `$false`.
     + :warning: Be careful that the RegExp matches only one application.
 
-+ **[string] ProductId** (Write): 
++ **[string] ProductId** (Write):
     + The GUID of the application.
     + This is the optional parameter. If this property is specified, the `Name` property will be ignored.
 
-+ **[string] Version** (Write): 
++ **[string] Version** (Write):
     + Indicates the expected version string of the application.
     + When the property not specified, This resource simply tests whether the application is installed or not. But when specified, This also tests the installed version is match the expected one.
 
@@ -49,7 +49,7 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
 
 + **[UInt32] TimeoutSec** (Write):
     + The timeout secs of download the installer from http/https/ftp.
-    + The default value is 900. (0 is infinite)
+    + The default value is `900`. (0 is infinite)
 
 + **[string] FileHash** (Write):
     + The expected hash value of the installer file at the given path.
@@ -57,38 +57,38 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
 
 + **[string] HashAlgorithm** (Write):
     + The algorithm used to generate the given hash value.
-    + The default value is SHA256 { SHA1 | SHA256 | SHA384 | SHA512 | MD5 | RIPEMD160 }
+    + The default value is `SHA256` { SHA1 | SHA256 | SHA384 | SHA512 | MD5 | RIPEMD160 }
 
-+ **[string] Arguments** (Write): 
++ **[string] Arguments** (Write):
     + The arguments to be passed to the installer during installation if needed.
 
-+ **[string] ArgumentsForUninstall** (Write): 
++ **[string] ArgumentsForUninstall** (Write):
     + The arguments to be passed to the uninstaller during uninstallation if needed.
 
-+ **[bool] UseUninstallString** (Write): 
++ **[bool] UseUninstallString** (Write):
     + If specified this property as `$true`, This resource will use the standard uninstall method that is registered in the registry value of "UninstallString" to uninstall programs.
     + The default value is `$false`.
     + If specified as `$true`, `InstallerPath` and `ArgumentsForUninstall` will be ignored.
 
-+ **[UInt32[]] ReturnCode** (Write): 
++ **[UInt32[]] ReturnCode** (Write):
     + Indicates the expected return code. If the return code does not match the expected value, the configuration will return an error.
     + The default value is `(0, 1641, 3010)`.
 
-+ **[bool] NoRestart** (Write): 
++ **[bool] NoRestart** (Write):
     + When this property as `$true`, This resource does not set `RebootNodeIfNeeded` to `$true` even if the system requires a reboot after installation.
     + The default value is `$false`.
 
-+ **[string] PreAction** (Write): 
++ **[string] PreAction** (Write):
     + You can specify the PowerShell commands that will execute before installation or uninstallation.
 
-+ **[string] PostAction** (Write): 
++ **[string] PostAction** (Write):
     + You can specify the PowerShell commands that will execute after installation or uninstallation.
 
-+ **[string] PreCopyFrom** (Write): 
++ **[string] PreCopyFrom** (Write):
     + You can copy extra files before installation or uninstallation.
     + Copied files will delete automatically after installation finished.
 
-+ **[string] PreCopyTo** (Write): 
++ **[string] PreCopyTo** (Write):
     + The path of the directory which the file specified by `PreCopyFrom` is saved.
 
 ----
@@ -141,3 +141,8 @@ Configuration Example3
     }
 }
 ```
+
+---
+## ChangeLog
+### Unreleased
+ + Fix failure of file download when `InstallerPath` is not a direct link [#1](https://github.com/mkht/DSCR_Application/issues/1)
