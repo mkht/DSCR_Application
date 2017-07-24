@@ -275,7 +275,7 @@ function Set-TargetResource {
     }
 
     #PreAction
-    ExecuteScriptBlock -ScriptBlockString $PreAction -ErrorAction Continue
+    Invoke-ScriptBlock -ScriptBlockString $PreAction -ErrorAction Continue
 
     $private:TempFolder = $env:TEMP
     $private:UseWebFile = $false
@@ -402,7 +402,7 @@ function Set-TargetResource {
     }
 
     #PostAction
-    ExecuteScriptBlock -ScriptBlockString $PostAction -ErrorAction Continue
+    Invoke-ScriptBlock -ScriptBlockString $PostAction -ErrorAction Continue
 
 } # end of Set-TargetResource
 
@@ -635,7 +635,7 @@ function Format-ProductId {
     }
 }
 
-function ExecuteScriptBlock {
+function Invoke-ScriptBlock {
     [CmdletBinding()]
     param
     (
