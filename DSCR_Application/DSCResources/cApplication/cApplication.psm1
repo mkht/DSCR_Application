@@ -343,7 +343,7 @@ function Set-TargetResource
                 $UseWebFile = $true
                 $Installer = (Get-RemoteFile -Path $InstallerPath -DestinationFolder $TempFolder -Credential $Credential -TimeoutSec $TimeoutSec -Force -PassThru -ErrorAction Stop)
             }
-            
+
             if($FileHash){
                 if(-not (Assert-FileHash -Path $Installer -FileHash $FileHash -Algorithm $HashAlgorithm)){
                     throw ("File '{0}' does not match expected hash value" -f $Installer)
@@ -377,7 +377,7 @@ function Set-TargetResource
         else{
             Write-Verbose ('{0} process exited successfully' -f $strInOrUnin)
         }
-        
+
         if(-not $NoRestart){
             $private:serverFeatureData = Invoke-CimMethod -Name 'GetServerFeature' -Namespace 'root\microsoft\windows\servermanager' -Class 'MSFT_ServerManagerTasks' -Arguments @{ BatchSize = 256 } -ErrorAction 'Ignore' -Verbose:$false
             $private:registryData = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction 'Ignore'
@@ -491,7 +491,12 @@ function Get-RemoteFile {
                 }
                 elseif($tempPath.Scheme -match 'http|https|ftp'){
                     # WebからDL
-                    $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($tempPath.AbsoluteUri))
+                    if($redUri = Get-RedirectedUrl $tempPath.AbsoluteUri){  #ファイル直接リンクではない場合、リダイレクト先のファイル名を取得する(issue #1)
+                        $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($redUri.LocalPath))
+                    }
+                    else{
+                        $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($tempPath.LocalPath))
+                    }
                     if(Test-Path $OutFile -PathType Leaf){
                         if($Force){
                             Write-Warning ('"{0}" will be overwritten.'-f $OutFile)
@@ -584,9 +589,9 @@ function Get-InstalledProgram {
     }
 
     $local:InstalledPrograms = Get-ChildItem $UninstallReg | % {Get-ItemProperty $_.PSPath} | where {$_.DisplayName}
-    
-    switch ($PsCmdlet.ParameterSetName) 
-    { 
+
+    switch ($PsCmdlet.ParameterSetName)
+    {
         'Name' {
             if($Fuzzy){
                 $Program = $InstalledPrograms | where {$_.DisplayName -match $Name} | select -First 1
@@ -601,7 +606,7 @@ function Get-InstalledProgram {
             $Program = $InstalledPrograms | where {$_.PSChildName -eq $ProductId} | select -First 1
             break
         }
-    } 
+    }
 
     if($Program){
         $Program
@@ -664,6 +669,21 @@ function ExecuteScriptBlock
     catch
     {
         throw $_
+    }
+}
+
+function Get-RedirectedUrl {
+    Param (
+        [Parameter(Mandatory,Position=0)]
+        [String]$URL
+    )
+
+    $request = [System.Net.WebRequest]::Create($URL)
+    $request.AllowAutoRedirect = $false
+    $response = $request.GetResponse()
+
+    If ($response.StatusCode -eq "Found") {
+        [System.Uri]$response.GetResponseHeader("Location")
     }
 }
 
