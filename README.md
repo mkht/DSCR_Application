@@ -79,10 +79,10 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
     + The default value is `$false`.
 
 + **[string] PreAction** (Write):
-    + You can specify the PowerShell commands that will execute before installation or uninstallation.
+    + You can specify the PowerShell commands or ScriptBlock that will execute before installation or uninstallation.
 
 + **[string] PostAction** (Write):
-    + You can specify the PowerShell commands that will execute after installation or uninstallation.
+    + You can specify the PowerShell commands or ScriptBlock that will execute after installation or uninstallation.
 
 + **[string] PreCopyFrom** (Write):
     + You can copy extra files before installation or uninstallation.
@@ -136,7 +136,9 @@ Configuration Example3
         InstallerPath = '\\FileServer\Installer\FireFox Setup 53.0.3.exe'
         Credential = $Cred  # Credential for FileServer
         Arguments = '/INI=C:\config.ini'
-        PreAction = '"[Install]`r`nInstallDirectoryPath=`"C:\FireFox\`"" | Out-File C:\config.ini -Encoding Ascii'    # Create config.ini before installation
+        PreAction = {
+                [Install]`r`nInstallDirectoryPath=`"C:\FireFox\`"" | Out-File C:\config.ini -Encoding Ascii
+            }   # Create config.ini before installation
         PostAction = 'del C:\config.ini -Force' # Remove config.ini after installation
     }
 }
