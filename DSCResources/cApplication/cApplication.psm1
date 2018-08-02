@@ -25,13 +25,30 @@ function Get-TargetResource {
         [System.String]
         $ProductId,
 
+        [System.String]
+        $InstalledCheckFilePath,
+
         [System.Boolean]
         $Fuzzy = $false
     )
 
     # Get Application info
+    # $InstalledCheckFilePath has highest priority
+    if ($InstalledCheckFilePath) {
+        Write-Verbose ('InstalledCheckFilePath is specified. Whether an application exists or not is judged by whether or not the path exists.')
+        if (Test-Path $InstalledCheckFilePath) {
+            Write-Verbose ('"{0}" is exist.' -f $InstalledCheckFilePath)
+            $Program = @{
+                DisplayName = $Name
+            }
+        }
+        else {
+            Write-Verbose ('"{0}" is not exist.' -f $InstalledCheckFilePath)
+            $Program = $null
+        }
+    }
     # $ProductId take priority over $Name
-    if ($ProductId) {
+    elseif ($ProductId) {
         $Program = Get-InstalledProgram -ProductId $ProductId
     }
     else {
@@ -87,6 +104,9 @@ function Test-TargetResource {
         [System.String]
         $ProductId,
 
+        [System.String]
+        $InstalledCheckFilePath,
+
         [System.Boolean]
         $Fuzzy = $false,
 
@@ -138,11 +158,12 @@ function Test-TargetResource {
     )
 
     $private:GetParam = @{
-        Ensure        = $Ensure
-        Name          = $Name
-        InstallerPath = $InstallerPath
-        ProductId     = $ProductId
-        Fuzzy         = $Fuzzy
+        Ensure                 = $Ensure
+        Name                   = $Name
+        InstallerPath          = $InstallerPath
+        ProductId              = $ProductId
+        InstalledCheckFilePath = $InstalledCheckFilePath
+        Fuzzy                  = $Fuzzy
     }
 
     $ProgramInfo = Get-TargetResource @GetParam -ErrorAction Stop
@@ -208,6 +229,9 @@ function Set-TargetResource {
 
         [System.String]
         $ProductId,
+
+        [System.String]
+        $InstalledCheckFilePath,
 
         [System.Boolean]
         $Fuzzy = $false,
@@ -286,15 +310,6 @@ function Set-TargetResource {
     $private:Arg = New-Object 'System.Collections.Generic.List[System.String]'
     $private:tmpDriveName = [Guid]::NewGuid()
 
-    $private:GetParam = @{
-        Ensure        = $Ensure
-        Name          = $Name
-        InstallerPath = $InstallerPath
-        ProductId     = $ProductId
-        Fuzzy         = $Fuzzy
-    }
-    $private:ProgramInfo = Get-TargetResource @GetParam -ErrorAction Stop
-
     try {
         if ($Ensure -eq 'Absent') {
             Write-Verbose ('Ensure = "Absent". Try to uninstall an application.')
@@ -303,6 +318,15 @@ function Set-TargetResource {
             $Arguments = $ArgumentsForUninstall
 
             if ($UseUninstallString) {
+                $private:GetParam = @{
+                    Ensure        = $Ensure
+                    Name          = $Name
+                    InstallerPath = $InstallerPath
+                    ProductId     = $ProductId
+                    Fuzzy         = $Fuzzy
+                }
+                $private:ProgramInfo = Get-TargetResource @GetParam -ErrorAction Stop
+
                 Write-Verbose ('Use UninstallString for uninstall. ("{0}")' -f $ProgramInfo.UninstallString)
                 $UseWebFile = $false
                 if ($ProgramInfo.UninstallString -match '^(?<path>.+\.[a-z]{3})(?<args>.*)') {

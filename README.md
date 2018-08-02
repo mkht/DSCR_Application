@@ -39,6 +39,10 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
     + Indicates the expected version string of the application.
     + When the property not specified, This resource simply tests whether the application is installed or not. But when specified, This also tests the installed version is match the expected one.
 
++ **[string] InstalledCheckFilePath** (Write):
+    + The file path of the application should be created.
+    + If this property is specified, This resource judge whether the application is installed or not by whether the path exists or not.
+
 + **[string] InstallerPath** (Required):
     + The path to the installer or uninstaller file.
     + You can use Local file / UNC / http / https / ftp . (if specified http/https/ftp. the file will be downloaded to temp dir before installation)

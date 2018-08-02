@@ -5,6 +5,7 @@ class cApplication : OMI_BaseResource
   [Key] string Name;
   [required] string InstallerPath;
   [write] string ProductId;
+  [write] string InstalledCheckFilePath;
   [write] boolean Fuzzy;
   [write] boolean NoRestart;
   [write] string Arguments;
