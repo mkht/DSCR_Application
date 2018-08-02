@@ -575,20 +575,36 @@ function Get-InstalledProgram {
     Param(
         [Parameter(Mandatory, ParameterSetName = 'Name')]
         [string] $Name,
+        
         [Parameter(Mandatory, ParameterSetName = 'Id')]
         [string] $ProductId,
+        
         [Parameter(ParameterSetName = 'Name')]
         [switch] $Fuzzy,
+
         [switch] $Wow64,
+        
         [switch] $FallbackToWow64 = $true
     )
+
     $local:Program = $null
     switch ($Wow64) {
-        $true {$UninstallReg = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"}
-        $false {$UninstallReg = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"}
+        $true {
+            $UninstallRegMachine = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+            $UninstallRegUser = "HKCU:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+        }
+
+        $false {
+            $UninstallRegMachine = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+            $UninstallRegUser = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+        }
     }
 
-    $local:InstalledPrograms = Get-ChildItem $UninstallReg | % {Get-ItemProperty $_.PSPath} | where {$_.DisplayName}
+    $local:InstalledPrograms = Get-ChildItem $UninstallRegMachine | % {Get-ItemProperty $_.PSPath} | where {$_.DisplayName}
+    
+    if (Test-Path $UninstallRegUser) {
+        $local:InstalledPrograms += Get-ChildItem $UninstallRegUser | % {Get-ItemProperty $_.PSPath} | where {$_.DisplayName}
+    }
 
     switch ($PsCmdlet.ParameterSetName) {
         'Name' {
