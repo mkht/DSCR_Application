@@ -1,4 +1,4 @@
-﻿Enum Ensure{
+Enum Ensure{
     Absent
     Present
 }
@@ -186,6 +186,7 @@ function Test-TargetResource {
         }
     }
 } # end of Test-TargetResource
+
 
 function Set-TargetResource {
     [CmdletBinding()]
@@ -396,7 +397,7 @@ function Set-TargetResource {
             Write-Verbose ("Remove temp files")
             Remove-Item $Installer -Force -Recurse | Out-Null
         }
-        if (Get-PSDrive | where {$_.Name -eq $tmpDriveName}) {
+        if (Get-PSDrive | Where-Object {$_.Name -eq $tmpDriveName}) {
             Remove-PSDrive -Name $tmpDriveName -Force
         }
     }
@@ -413,14 +414,14 @@ function Get-RemoteFile {
         [Parameter(Mandatory = $true, Position = 0)]
         [Alias("Uri")]
         [Alias("SourcePath")]
-        [System.Uri[]] $Path, # ダウンロードするファイルパス（URI）
+        [System.Uri[]] $Path,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [string]$DestinationFolder, # ダウンロード先フォルダ
+        [string]$DestinationFolder,
 
         [Parameter()]
         [AllowNull()]
-        [pscredential]$Credential, # 資格情報
+        [pscredential]$Credential,
 
         [Parameter()]
         [int]$TimeoutSec = 0,
@@ -445,14 +446,14 @@ function Get-RemoteFile {
                 $private:valid = $true
                 $private:tmpDriveName = [Guid]::NewGuid()
 
-                if ($tempPath.IsLoopback -eq $null) {
+                if ($null -eq $tempPath.IsLoopback) {
                     $valid = $false
                     throw ("{0} is not valid uri." -f $tempPath)
                 }
 
-                # インストーラの場所によって処理分岐(ローカル or 共有フォルダ or Web)
+                # Depending on the location of the installer processing branch (local or shared folder or Web)
                 if ($tempPath.IsLoopback -and (!$tempPath.IsUnc)) {
-                    # ローカルファイル
+                    # Local file
                     Write-Verbose ('"{0}" is local file.' -f $tempPath.LocalPath)
                     $valid = $true
                     $OutFile = $tempPath.LocalPath
@@ -460,12 +461,12 @@ function Get-RemoteFile {
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse -PassThru:$PassThru
                 }
                 elseif ($tempPath.IsUnc) {
-                    # 共有フォルダ
-                    # 資格情報を使う場合は一度ドライブをマップする必要あり
+                    # Shared folder
+                    # When using credentials it is necessary to map the drive first
                     if ($PSBoundParameters.Credential) {
                         New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tempPath.LocalPath) -Credential $Credential -ErrorAction Stop | Out-Null
                     }
-                    # ローカルにコピーする
+                    # Copy to Local
                     $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($tempPath.LocalPath))
                     if (Test-Path $OutFile -PathType Leaf) {
                         if ($tempPath.LocalPath -eq $OutFile) {
@@ -489,9 +490,9 @@ function Get-RemoteFile {
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse
                 }
                 elseif ($tempPath.Scheme -match 'http|https|ftp') {
-                    # WebからDL
+                    # Download from Web
                     if ($redUri = Get-RedirectedUrl $tempPath.AbsoluteUri) {
-                        #ファイル直接リンクではない場合、リダイレクト先のファイル名を取得する(issue #1)
+                        # When it is not a file direct link, obtain the file name of the redirect destination(issue #1)
                         $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($redUri.LocalPath))
                     }
                     else {
@@ -527,13 +528,14 @@ function Get-RemoteFile {
                 Write-Error $_.Exception.Message
             }
             finally {
-                if (Get-PSDrive | where {$_.Name -eq $tmpDriveName}) {
+                if (Get-PSDrive | Where-Object {$_.Name -eq $tmpDriveName}) {
                     Remove-PSDrive -Name $tmpDriveName -Force
                 }
             }
         }
     }
 }
+
 
 function Assert-FileHash {
     [CmdletBinding()]
@@ -558,7 +560,7 @@ function Assert-FileHash {
     )
 
     Process {
-        $private:hash = Get-FileHash -Path $Path -Algorithm $Algorithm | select Hash
+        $private:hash = Get-FileHash -Path $Path -Algorithm $Algorithm | Select-Object Hash
         if ($FileHash -eq $hash.Hash) {
             Write-Verbose ('Match file hash of "{1}". ({0})' -f $hash.Hash, $Path)
             return $true
@@ -569,6 +571,7 @@ function Assert-FileHash {
         }
     }
 }
+
 
 function Get-InstalledProgram {
     [CmdletBinding(DefaultParameterSetName = 'Name')]
@@ -600,25 +603,25 @@ function Get-InstalledProgram {
         }
     }
 
-    $local:InstalledPrograms = Get-ChildItem $UninstallRegMachine | % {Get-ItemProperty $_.PSPath} | where {$_.DisplayName}
+    $local:InstalledPrograms = Get-ChildItem $UninstallRegMachine | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DisplayName}
     
     if (Test-Path $UninstallRegUser) {
-        $local:InstalledPrograms += Get-ChildItem $UninstallRegUser | % {Get-ItemProperty $_.PSPath} | where {$_.DisplayName}
+        $local:InstalledPrograms += Get-ChildItem $UninstallRegUser | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DisplayName}
     }
 
     switch ($PsCmdlet.ParameterSetName) {
         'Name' {
             if ($Fuzzy) {
-                $Program = $InstalledPrograms | where {$_.DisplayName -match $Name} | select -First 1
+                $Program = $InstalledPrograms | Where-Object {$_.DisplayName -match $Name} | Select-Object -First 1
             }
             else {
-                $Program = $InstalledPrograms | where {$_.DisplayName -eq $Name} | select -First 1
+                $Program = $InstalledPrograms | Where-Object {$_.DisplayName -eq $Name} | Select-Object -First 1
             }
             break
         }
         'Id' {
             $ProductId = Format-ProductId -ProductId $ProductId
-            $Program = $InstalledPrograms | where {$_.PSChildName -eq $ProductId} | select -First 1
+            $Program = $InstalledPrograms | Where-Object {$_.PSChildName -eq $ProductId} | Select-Object -First 1
             break
         }
     }
@@ -630,6 +633,7 @@ function Get-InstalledProgram {
         Get-InstalledProgram @PSBoundParameters -Wow64
     }
 }
+
 
 function Format-ProductId {
     [CmdletBinding()]
@@ -650,6 +654,7 @@ function Format-ProductId {
         Write-Error ("The specified ProductId ({0}) is not a valid Guid" -f $ProductId)
     }
 }
+
 
 function Invoke-ScriptBlock {
     [CmdletBinding()]
@@ -681,6 +686,7 @@ function Invoke-ScriptBlock {
     }
 }
 
+
 function Get-RedirectedUrl {
     Param (
         [Parameter(Mandatory, Position = 0)]
@@ -696,14 +702,17 @@ function Get-RedirectedUrl {
     }
 }
 
+
 function Start-Command {
     [CmdletBinding()]
     Param(
         [Parameter(Position = 0)]
-        [string] $FilePath, # 実行ファイル
+        [string] $FilePath,
+
         [Parameter(Position = 1)]
-        [string[]]$ArgumentList, # 引数
-        [int]$Timeout = [int]::MaxValue # タイムアウト
+        [string[]]$ArgumentList,
+        
+        [int]$Timeout = [int]::MaxValue
     )
     $ProcessInfo = New-Object System.Diagnostics.ProcessStartInfo
     $ProcessInfo.FileName = $FilePath
