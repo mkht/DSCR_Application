@@ -154,7 +154,7 @@ function Test-TargetResource {
                 return $true
             }
             'Present' {
-                Write-Verbose ('Missmatch desired state & current state. Return "False"')
+                Write-Verbose ('Mismatch desired state & current state. Return "False"')
                 return $false
             }
             Default {
@@ -165,14 +165,14 @@ function Test-TargetResource {
     else {
         switch ($ProgramInfo.Ensure) {
             'Absent' {
-                Write-Verbose ('Missmatch desired state & current state. Return "False"')
+                Write-Verbose ('Mismatch desired state & current state. Return "False"')
                 return $false
             }
             'Present' {
                 if ($Version) {
                     if ($Version -ne $ProgramInfo.Version) {
                         Write-Verbose ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
-                        Write-Verbose ('Missmatch desired state & current state. Return "False"')
+                        Write-Verbose ('Mismatch desired state & current state. Return "False"')
                         return $false
                     }
                 }
