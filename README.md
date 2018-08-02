@@ -150,5 +150,9 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### 2.4.0
+ + Add `InstalledCheckFilePath` property
+ + Fix issue that some applications are judged as not installed even if it is installed.
+
 ### 2.3.0
  + Fix failure of file download when `InstallerPath` is not a direct link [#1](https://github.com/mkht/DSCR_Application/issues/1)
