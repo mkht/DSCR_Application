@@ -150,6 +150,9 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### Unreleased
+ + Fix issue that An error may occur in an environment with only one installed application. [#3](https://github.com/mkht/DSCR_Application/issues/3)
+
 ### 2.4.0
  + Add `InstalledCheckFilePath` property
  + Fix issue that some applications are judged as not installed even if it is installed.

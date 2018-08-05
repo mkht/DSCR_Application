@@ -627,8 +627,8 @@ function Get-InstalledProgram {
         }
     }
 
-    $local:InstalledPrograms = Get-ChildItem $UninstallRegMachine | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DisplayName}
-    
+    $local:InstalledPrograms = @()
+    $local:InstalledPrograms += Get-ChildItem $UninstallRegMachine | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DisplayName}
     if (Test-Path $UninstallRegUser) {
         $local:InstalledPrograms += Get-ChildItem $UninstallRegUser | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DisplayName}
     }
