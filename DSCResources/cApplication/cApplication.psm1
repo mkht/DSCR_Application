@@ -332,6 +332,10 @@ function Set-TargetResource {
                 }
                 $private:ProgramInfo = Get-TargetResource @GetParam -ErrorAction Stop
 
+                if (-not $ProgramInfo.UninstallString) {
+                    throw ("Couldn't get UninstallString.")
+                }
+
                 Write-Verbose ('Use UninstallString for uninstall. ("{0}")' -f $ProgramInfo.UninstallString)
                 $UseWebFile = $false
                 if ($ProgramInfo.UninstallString -match '^(?<path>.+\.[a-z]{3})(?<args>.*)') {
