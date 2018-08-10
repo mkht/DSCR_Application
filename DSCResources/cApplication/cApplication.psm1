@@ -107,7 +107,10 @@ function Test-TargetResource {
         [string]
         $InstalledCheckFilePath,
 
-        [System.Boolean]
+        [string]
+        $InstalledCheckScript,
+
+        [bool]
         $Fuzzy = $false,
 
         [bool]
@@ -156,6 +159,11 @@ function Test-TargetResource {
         [string]
         $PreCopyTo
     )
+
+    if ($InstalledCheckScript) {
+        $local:scriptBlock = [ScriptBlock]::Create($InstalledCheckScript)
+        return [bool]($local:scriptBlock.Invoke())
+    }
 
     $private:GetParam = @{
         Ensure                 = $Ensure
@@ -425,11 +433,11 @@ function Set-TargetResource {
         Write-Error $_.Exception
     }
     finally {
-        if (Test-Path $PreCopyTo) {
+        if ($PreCopyTo -and (Test-Path $PreCopyTo -ErrorAction SilentlyContinue)) {
             Write-Verbose ("Remove PreCopied file(s)")
             Remove-Item $PreCopyTo -Force -Recurse > $null
         }
-        if ($UseWebFile -and (Test-Path $Installer -PathType Leaf)) {
+        if ($UseWebFile -and $Installer -and (Test-Path $Installer -PathType Leaf -ErrorAction SilentlyContinue)) {
             Write-Verbose ("Remove temp files")
             Remove-Item $Installer -Force -Recurse > $null
         }

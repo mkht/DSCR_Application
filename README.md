@@ -154,6 +154,10 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### Unreleased
+ + Improve error handling
+ + Add `InstalledCheckFilePath` property [#4](https://github.com/mkht/DSCR_Application/issues/4)
+
 ### 2.4.1
  + Fix issue that An error may occur in an environment with only one installed application. [#3](https://github.com/mkht/DSCR_Application/issues/3)
 
