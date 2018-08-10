@@ -10,25 +10,25 @@ function Get-TargetResource {
     (
         [Parameter(Mandatory = $false)]
         [ValidateSet("Present", "Absent")]
-        [System.String]
+        [string]
         $Ensure = 'Present',
 
         [Parameter(Mandatory = $true)]
-        [System.String]
+        [string]
         $Name,
 
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
-        [System.String]
+        [string]
         $InstallerPath,
 
-        [System.String]
+        [string]
         $ProductId,
 
-        [System.String]
+        [string]
         $InstalledCheckFilePath,
 
-        [System.Boolean]
+        [bool]
         $Fuzzy = $false
     )
 
@@ -84,45 +84,45 @@ function Get-TargetResource {
 
 function Test-TargetResource {
     [CmdletBinding()]
-    [OutputType([System.Boolean])]
+    [OutputType([bool])]
     Param
     (
         [Parameter(Mandatory = $false)]
         [ValidateSet("Present", "Absent")]
-        [System.String]
+        [string]
         $Ensure = 'Present',
 
         [Parameter(Mandatory = $true)]
-        [System.String]
+        [string]
         $Name,
 
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
-        [System.String]
+        [string]
         $InstallerPath,
 
-        [System.String]
+        [string]
         $ProductId,
 
-        [System.String]
+        [string]
         $InstalledCheckFilePath,
 
         [System.Boolean]
         $Fuzzy = $false,
 
-        [System.Boolean]
+        [bool]
         $NoRestart = $false,
 
-        [System.String]
+        [string]
         $Version,
 
-        [System.String]
+        [string]
         $Arguments,
 
-        [System.String]
+        [string]
         $ArgumentsForUninstall,
 
-        [System.Boolean]
+        [bool]
         $UseUninstallString = $true,
 
         [PSCredential]
@@ -137,11 +137,11 @@ function Test-TargetResource {
         [UInt32]
         $TimeoutSec = 900,
 
-        [System.String]
+        [string]
         $FileHash,
 
         [ValidateSet('SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', 'RIPEMD160')]
-        [String]
+        [string]
         $HashAlgorithm = 'SHA256',
 
         [string]
@@ -215,40 +215,43 @@ function Set-TargetResource {
     (
         [Parameter(Mandatory = $false)]
         [ValidateSet("Present", "Absent")]
-        [System.String]
+        [string]
         $Ensure = 'Present',
 
         [Parameter(Mandatory = $true)]
-        [System.String]
+        [string]
         $Name,
 
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
-        [System.String]
+        [string]
         $InstallerPath,
 
-        [System.String]
+        [string]
         $ProductId,
 
-        [System.String]
+        [string]
         $InstalledCheckFilePath,
 
-        [System.Boolean]
+        [string]
+        $InstalledCheckScript,
+
+        [bool]
         $Fuzzy = $false,
 
-        [System.Boolean]
+        [bool]
         $NoRestart = $false,
 
-        [System.String]
+        [string]
         $Version,
 
-        [System.String]
+        [string]
         $Arguments,
 
-        [System.String]
+        [string]
         $ArgumentsForUninstall,
 
-        [System.Boolean]
+        [bool]
         $UseUninstallString = $true,
 
         [PSCredential]
@@ -263,11 +266,11 @@ function Set-TargetResource {
         [UInt32]
         $TimeoutSec = 900,
 
-        [System.String]
+        [string]
         $FileHash,
 
         [ValidateSet('SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', 'RIPEMD160')]
-        [String]
+        [string]
         $HashAlgorithm = 'SHA256',
 
         [string]
@@ -580,17 +583,17 @@ function Assert-FileHash {
             Position = 0
         )]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [string]
         $Path,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [string]
         $FileHash,
 
         [Parameter()]
         [ValidateSet('SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', 'RIPEMD160')]
-        [String]
+        [string]
         $Algorithm = 'SHA256'
     )
 
@@ -677,7 +680,7 @@ function Format-ProductId {
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [string]
         $ProductId
     )
 
@@ -725,7 +728,7 @@ function Invoke-ScriptBlock {
 function Get-RedirectedUrl {
     Param (
         [Parameter(Mandatory, Position = 0)]
-        [String]$URL
+        [string]$URL
     )
 
     $request = [System.Net.WebRequest]::Create($URL)
