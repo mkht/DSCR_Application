@@ -154,7 +154,7 @@ Configuration Example3
 
 ---
 ## ChangeLog
-### Unreleased
+### 2.5.0
  + Improve error handling
  + Add `InstalledCheckFilePath` property [#4](https://github.com/mkht/DSCR_Application/issues/4)
 
