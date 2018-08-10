@@ -293,10 +293,15 @@ function Set-TargetResource {
     }
 
     #PreCopy
-    if ($PreCopyFrom -and $PreCopyTo) {
-        $UsePreCopy = $true
-        Write-Verbose ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom.OriginalString, $PreCopyTo.OriginalString)
-        Get-RemoteFile -Path $PreCopyFrom -DestinationFolder $PreCopyTo -Credential $Credential -TimeoutSec $TimeoutSec -Force -ErrorAction Stop | Out-Null
+    if ([string]::IsNullOrWhiteSpace($PreCopyFrom) -and $PreCopyTo) {
+        Write-Warning ('PreCopyTo parameter is specified, but PreCopyFrom is empty. You should specify both PreCopyFrom and PreCopyTo.')
+    }
+    elseif ($PreCopyFrom -and [string]::IsNullOrWhiteSpace($PreCopyTo)) {
+        Write-Warning ('PreCopyFrom parameter is specified, but PreCopyTo is empty. You should specify both PreCopyFrom and PreCopyTo.')
+    }
+    elseif ($PreCopyFrom -and $PreCopyTo) {
+        Write-Verbose ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom, $PreCopyTo)
+        Get-RemoteFile -Path $PreCopyFrom -DestinationFolder $PreCopyTo -Credential $Credential -TimeoutSec $TimeoutSec -Force -ErrorAction Stop >$null
     }
 
     #PreAction
@@ -357,7 +362,7 @@ function Set-TargetResource {
                 Write-Verbose ('"{0}" is local file or remote unc file.' -f $tmpPath.LocalPath)
                 $UseWebFile = $false
                 if ($PSBoundParameters.Credential) {
-                    New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tmpPath.LocalPath) -Credential $Credential -ErrorAction Stop | Out-Null
+                    New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tmpPath.LocalPath) -Credential $Credential -ErrorAction Stop > $null
                 }
                 $Installer = $tmpPath.LocalPath
             }
@@ -410,19 +415,19 @@ function Set-TargetResource {
         }
     }
     catch [Exception] {
-        Write-Error $_.Exception.Message
+        Write-Error $_.Exception
     }
     finally {
-        if ($UsePreCopy -and (Test-Path $PreCopyTo)) {
-            Write-Verbose ("Remove Precopied file(s)")
-            Remove-Item $PreCopyTo -Force -Recurse | Out-Null
+        if (Test-Path $PreCopyTo) {
+            Write-Verbose ("Remove PreCopied file(s)")
+            Remove-Item $PreCopyTo -Force -Recurse > $null
         }
         if ($UseWebFile -and (Test-Path $Installer -PathType Leaf)) {
             Write-Verbose ("Remove temp files")
-            Remove-Item $Installer -Force -Recurse | Out-Null
+            Remove-Item $Installer -Force -Recurse > $null
         }
         if (Get-PSDrive | Where-Object {$_.Name -eq $tmpDriveName}) {
-            Remove-PSDrive -Name $tmpDriveName -Force
+            Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -458,8 +463,8 @@ function Get-RemoteFile {
     )
     begin {
         if (-not (Test-Path $DestinationFolder -PathType Container)) {
-            Write-Verbose ('DestinationFolder Folder "{0}" is not exist. Will create it.' -f $DestinationFolder)
-            New-Item $DestinationFolder -ItemType Directory -Force -ErrorAction Stop
+            Write-Verbose ('DestinationFolder "{0}" is not exist. Will create it.' -f $DestinationFolder)
+            New-Item $DestinationFolder -ItemType Directory -Force -ErrorAction Stop > $null
         }
     }
 
@@ -488,7 +493,7 @@ function Get-RemoteFile {
                     # Shared folder
                     # When using credentials it is necessary to map the drive first
                     if ($PSBoundParameters.Credential) {
-                        New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tempPath.LocalPath) -Credential $Credential -ErrorAction Stop | Out-Null
+                        New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tempPath.LocalPath) -Credential $Credential -ErrorAction Stop > $null
                     }
                     # Copy to Local
                     $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($tempPath.LocalPath))
@@ -549,11 +554,11 @@ function Get-RemoteFile {
                 }
             }
             catch [Exception] {
-                Write-Error $_.Exception.Message
+                Write-Error $_.Exception
             }
             finally {
                 if (Get-PSDrive | Where-Object {$_.Name -eq $tmpDriveName}) {
-                    Remove-PSDrive -Name $tmpDriveName -Force
+                    Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
                 }
             }
         }
@@ -570,6 +575,7 @@ function Assert-FileHash {
             ValueFromPipeline = $true,
             Position = 0
         )]
+        [ValidateNotNullOrEmpty()]
         [String]
         $Path,
 
@@ -578,6 +584,7 @@ function Assert-FileHash {
         [String]
         $FileHash,
 
+        [Parameter()]
         [ValidateSet('SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', 'RIPEMD160')]
         [String]
         $Algorithm = 'SHA256'
@@ -744,7 +751,7 @@ function Start-Command {
     $ProcessInfo.Arguments = [string]$ArgumentList
     $Process = New-Object System.Diagnostics.Process
     $Process.StartInfo = $ProcessInfo
-    $Process.Start() | Out-Null
+    $Process.Start() > $null
     if (!$Process.WaitForExit($Timeout)) {
         $Process.Kill()
         Write-Error ('Process timeout. Terminated. (Timeout:{0}s, Process:{1})' -f ($Timeout * 0.001), $FilePath)
