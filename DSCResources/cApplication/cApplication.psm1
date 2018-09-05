@@ -624,15 +624,15 @@ function Get-InstalledProgram {
     Param(
         [Parameter(Mandatory, ParameterSetName = 'Name')]
         [string] $Name,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'Id')]
         [string] $ProductId,
-        
+
         [Parameter(ParameterSetName = 'Name')]
         [switch] $Fuzzy,
 
         [switch] $Wow64,
-        
+
         [switch] $FallbackToWow64 = $true
     )
 
@@ -757,7 +757,7 @@ function Start-Command {
 
         [Parameter(Position = 1)]
         [string[]]$ArgumentList,
-        
+
         [int]$Timeout = [int]::MaxValue
     )
     $ProcessInfo = New-Object System.Diagnostics.ProcessStartInfo
