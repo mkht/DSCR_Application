@@ -145,7 +145,7 @@ Configuration Example3
         Credential = $Cred  # Credential for FileServer
         Arguments = '/INI=C:\config.ini'
         PreAction = {
-                [Install]`r`nInstallDirectoryPath=`"C:\FireFox\`"" | Out-File C:\config.ini -Encoding Ascii
+                "[Install]`r`nInstallDirectoryPath=`"C:\FireFox\`"" | Out-File C:\config.ini -Encoding Ascii
             }   # Create config.ini before installation
         PostAction = 'del C:\config.ini -Force' # Remove config.ini after installation
     }
@@ -154,6 +154,9 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### Unreleased
+ + Fix examples in the README.
+
 ### 2.5.1
  + Fix PSSA issues.
  + Remove unnecessary files in the published data.
