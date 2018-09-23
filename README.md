@@ -154,7 +154,9 @@ Configuration Example3
 
 ---
 ## ChangeLog
-### Unreleased
+### 2.5.2
+ + Correct the default value of `UseUninstallString` property to `$false`.
+ + Add a sample configuration for uninstall.
  + Fix examples in the README.
 
 ### 2.5.1
