@@ -318,6 +318,10 @@ function Set-TargetResource {
     #PreAction
     Invoke-ScriptBlock -ScriptBlockString $PreAction -ErrorAction Continue
 
+    if ($NoRestart) {
+        $PFRORegistry = Escape-PendingFileRenameOperations -ErrorAction Stop
+    }
+
     $private:TempFolder = $env:TEMP
     $private:UseWebFile = $false
     $private:Installer = ''
@@ -437,12 +441,18 @@ function Set-TargetResource {
             Write-Verbose ("Remove PreCopied file(s)")
             Remove-Item $PreCopyTo -Force -Recurse > $null
         }
+
         if ($UseWebFile -and $Installer -and (Test-Path $Installer -PathType Leaf -ErrorAction SilentlyContinue)) {
             Write-Verbose ("Remove temp files")
             Remove-Item $Installer -Force -Recurse > $null
         }
+
         if (Get-PSDrive | Where-Object {$_.Name -eq $tmpDriveName}) {
             Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
+        }
+
+        if ($PFRORegistry) {
+            Restore-PendingFileRenameOperations -InputObject $PFRORegistry -ErrorAction Continue
         }
     }
 
@@ -772,6 +782,34 @@ function Start-Command {
         Write-Error ('Process timeout. Terminated. (Timeout:{0}s, Process:{1})' -f ($Timeout * 0.001), $FilePath)
     }
     $Process.ExitCode
+}
+
+
+function Escape-PendingFileRenameOperations {
+    [CmdletBinding()]
+    param ()
+
+    $PFRORegistry = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction SilentlyContinue
+
+    if ($PFRORegistry) {
+        Remove-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations'
+        $PFRORegistry
+    }
+}
+
+
+function Restore-PendingFileRenameOperations {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [ValidateNotNull()]
+        [Object]
+        $InputObject
+    )
+
+    if ($InputObject.PendingFileRenameOperations) {
+        $null = New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -Value $InputObject.PendingFileRenameOperations -PropertyType MultiString -Force
+    }
 }
 
 Export-ModuleMember -Function *-TargetResource
