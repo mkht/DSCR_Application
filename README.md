@@ -131,7 +131,7 @@ Configuration Example2
 }
 ```
 
-+ **Example 3**: Install FireFox v53.0.3 to the custom directory [Complex scenario]
++ **Example 3**: Install Firefox v53.0.3 to the custom directory [Complex scenario]
 ```Powershell
 Configuration Example3
 {
@@ -141,11 +141,11 @@ Configuration Example3
         Name = 'Mozilla Firefox [\.\d]+ \(x64 en-US\)' # Use RegExp
         Fuzzy = $true
         Version = '53.0.3'
-        InstallerPath = '\\FileServer\Installer\FireFox Setup 53.0.3.exe'
+        InstallerPath = '\\FileServer\Installer\Firefox Setup 53.0.3.exe'
         Credential = $Cred  # Credential for FileServer
         Arguments = '/INI=C:\config.ini'
         PreAction = {
-                "[Install]`r`nInstallDirectoryPath=`"C:\FireFox\`"" | Out-File C:\config.ini -Encoding Ascii
+                "[Install]`r`nInstallDirectoryPath=`"C:\Firefox\`"" | Out-File C:\config.ini -Encoding Ascii
             }   # Create config.ini before installation
         PostAction = 'del C:\config.ini -Force' # Remove config.ini after installation
     }
