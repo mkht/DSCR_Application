@@ -126,7 +126,7 @@ function Test-TargetResource {
         $ArgumentsForUninstall,
 
         [bool]
-        $UseUninstallString = $true,
+        $UseUninstallString = $false,
 
         [PSCredential]
         [System.Management.Automation.Credential()]
@@ -260,7 +260,7 @@ function Set-TargetResource {
         $ArgumentsForUninstall,
 
         [bool]
-        $UseUninstallString = $true,
+        $UseUninstallString = $false,
 
         [PSCredential]
         [System.Management.Automation.Credential()]
