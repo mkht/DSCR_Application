@@ -53,7 +53,7 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
 
 + **[PSCredential] Credential** (Write):
     + The credential for access to the installer on a remote source if needed.
-    + :warning: If you want to run the installation as specific user, you need to use `RunAsCredential` standard property.
+    + :warning: If you want to run the installation as specific user, you need to use `PsDscRunAsCredential` standard property.
 
 + **[UInt32] TimeoutSec** (Write):
     + The timeout secs of download the installer from http/https/ftp.
