@@ -12,7 +12,7 @@
     # RootModule = ''
 
     # このモジュールのバージョン番号です。
-    ModuleVersion        = '2.5.2'
+    ModuleVersion        = '2.5.3'
 
     # サポートされている PSEditions
     # CompatiblePSEditions = @()
@@ -95,19 +95,19 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = 'DesiredStateConfiguration', 'DSC', 'DSCResource'
+            Tags         = 'DesiredStateConfiguration', 'DSC', 'DSCResource'
 
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/mkht/DSCR_Application/blob/master/LICENSE'
+            LicenseUri   = 'https://github.com/mkht/DSCR_Application/blob/master/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/mkht/DSCR_Application'
+            ProjectUri   = 'https://github.com/mkht/DSCR_Application'
 
             # A URL to an icon representing this module.
             # IconUri = ''
 
             # ReleaseNotes of this module
-            # ReleaseNotes = ''
+            ReleaseNotes = 'https://github.com/mkht/DSCR_Application#changelog'
 
             # External dependent modules of this module
             # ExternalModuleDependencies = ''
