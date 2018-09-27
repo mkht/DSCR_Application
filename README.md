@@ -56,7 +56,7 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
     + :warning: If you want to run the installation as specific user, you need to use `PsDscRunAsCredential` standard property.
 
 + **[UInt32] TimeoutSec** (Write):
-    + The timeout secs of download the installer from http/https/ftp.
+    + The timeout seconds of download the installer from http/https/ftp.
     + The default value is `900`. (0 is infinite)
 
 + **[string] FileHash** (Write):
