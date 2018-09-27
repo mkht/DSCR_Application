@@ -404,12 +404,12 @@ function Set-TargetResource {
         if ([System.IO.Path]::GetExtension($Installer) -eq '.msi') {
             $Arg.Insert(0, ('/{0} "{1}"' -f $msiOpt, $Installer))
             Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f 'msiexec.exe', $Arg, $strInOrUnin)
-            $ExitCode = Start-Command -FilePath 'msiexec.exe' -ArgumentList $Arg -Timeout ($TimeoutSec * 1000) -ErrorAction Stop
+            $ExitCode = Start-Command -FilePath 'msiexec.exe' -ArgumentList $Arg -ErrorAction Stop
             Write-Verbose ("{1} end. Exitcode: '{0}'" -f $ExitCode, $strInOrUnin)
         }
         else {
             Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
-            $ExitCode = Start-Command -FilePath $Installer -ArgumentList $Arg -Timeout ($TimeoutSec * 1000) -ErrorAction Stop
+            $ExitCode = Start-Command -FilePath $Installer -ArgumentList $Arg -ErrorAction Stop
             Write-Verbose ("{1} end. Exitcode: '{0}'" -f $ExitCode, $strInOrUnin)
         }
 

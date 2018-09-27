@@ -154,6 +154,9 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### Unreleased
+ + Fixed an issue that timeout error occurred unexpectedly during installation.
+
 ### 2.5.2
  + Correct the default value of `UseUninstallString` property to `$false`.
  + Add a sample configuration for uninstall.
