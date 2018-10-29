@@ -535,7 +535,7 @@ function Get-RemoteFile {
                 }
                 elseif ($tempPath.Scheme -match 'http|https|ftp') {
                     # Download from Web
-                    if ($redUri = Get-RedirectedUrl $tempPath.AbsoluteUri) {
+                    if ($redUri = Get-RedirectedUrl $tempPath.AbsoluteUri -ErrorAction SilentlyContinue) {
                         # When it is not a file direct link, obtain the file name of the redirect destination(issue #1)
                         $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($redUri.LocalPath))
                     }
@@ -734,17 +734,24 @@ function Invoke-ScriptBlock {
 
 
 function Get-RedirectedUrl {
+    [CmdletBinding()]
+    [OutputType([System.Uri])]
     Param (
         [Parameter(Mandatory, Position = 0)]
         [string]$URL
     )
 
+    try {
     $request = [System.Net.WebRequest]::Create($URL)
     $request.AllowAutoRedirect = $false
     $response = $request.GetResponse()
 
-    If ($response.StatusCode -eq "Found") {
+        if ($response.StatusCode -eq "Found") {
         [System.Uri]$response.GetResponseHeader("Location")
+    }
+}
+    catch {
+        Write-Error $_.Exception
     }
 }
 
