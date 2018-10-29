@@ -553,9 +553,11 @@ function Get-RemoteFile {
                     }
 
                     Write-Verbose ("Download file from '{0}' to '{1}'" -f $tempPath.AbsoluteUri, $OutFile)
-                    $private:origVerbose = $VerbosePreference; $VerbosePreference = 'SilentlyContinue'
+                    #Suppress Progress bar for faster download
+                    $private:origProgress = $ProgressPreference
+                    $ProgressPreference = 'SilentlyContinue'
                     Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -TimeoutSec $TimeoutSec -ErrorAction stop
-                    $VerbosePreference = $origVerbose
+                    $ProgressPreference = $private:origProgress
                 }
                 else {
                     $valid = $false
@@ -742,14 +744,14 @@ function Get-RedirectedUrl {
     )
 
     try {
-    $request = [System.Net.WebRequest]::Create($URL)
-    $request.AllowAutoRedirect = $false
-    $response = $request.GetResponse()
+        $request = [System.Net.WebRequest]::Create($URL)
+        $request.AllowAutoRedirect = $false
+        $response = $request.GetResponse()
 
         if ($response.StatusCode -eq "Found") {
-        [System.Uri]$response.GetResponseHeader("Location")
+            [System.Uri]$response.GetResponseHeader("Location")
+        }
     }
-}
     catch {
         Write-Error $_.Exception
     }
