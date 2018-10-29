@@ -12,7 +12,7 @@
     # RootModule = ''
 
     # このモジュールのバージョン番号です。
-    ModuleVersion        = '2.5.3'
+    ModuleVersion        = '2.6.0'
 
     # サポートされている PSEditions
     # CompatiblePSEditions = @()
@@ -81,7 +81,7 @@
     AliasesToExport      = @()
 
     # このモジュールからエクスポートする DSC リソース
-    DscResourcesToExport = 'cApplication'
+    DscResourcesToExport = @('cApplication')
 
     # このモジュールに同梱されているすべてのモジュールのリスト
     # ModuleList = @()

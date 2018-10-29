@@ -154,6 +154,10 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### 2.6.0
+ + Faster file download with http/https/ftp
+ + Fixed an issue that the error occurred when a FTP URL is specified to InstallerPath.
+
 ### 2.5.3
  + Fixed an issue that timeout error may occurred unexpectedly during installation.
 
