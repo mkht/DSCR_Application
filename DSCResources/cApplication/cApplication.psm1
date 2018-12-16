@@ -316,7 +316,12 @@ function Set-TargetResource {
     }
 
     #PreAction
-    Invoke-ScriptBlock -ScriptBlockString $PreAction -ErrorAction Continue
+    try {
+        Invoke-ScriptBlock -ScriptBlockString $PreAction
+    }
+    catch [Exception] {
+        Write-Error $_.Exception
+    }
 
     $private:TempFolder = $env:TEMP
     $private:UseWebFile = $false
@@ -447,7 +452,12 @@ function Set-TargetResource {
     }
 
     #PostAction
-    Invoke-ScriptBlock -ScriptBlockString $PostAction -ErrorAction Continue
+    try {
+        Invoke-ScriptBlock -ScriptBlockString $PostAction
+    }
+    catch [Exception] {
+        Write-Error $_.Exception
+    }
 
 } # end of Set-TargetResource
 
