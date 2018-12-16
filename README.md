@@ -154,6 +154,9 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### 2.7.0
+ + Improve error handling.
+
 ### 2.6.0
  + Faster file download with http/https/ftp
  + Fixed an issue that the error occurred when a FTP URL is specified to InstallerPath.
