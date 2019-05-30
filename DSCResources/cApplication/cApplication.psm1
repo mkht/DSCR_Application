@@ -427,9 +427,11 @@ function Set-TargetResource {
         }
         if ($WorkingDirectory) {
             $CommandParam.WorkingDirectory = $WorkingDirectory
+            Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}', WorkDir:'{3}'" -f $Installer, $Arg, $strInOrUnin, $WorkingDirectory)
         }
-
-        Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
+        else {
+            Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
+        }
         $ExitCode = Start-Command @CommandParam -ErrorAction Stop
         Write-Verbose ("{1} end. ExitCode: '{0}'" -f $ExitCode, $strInOrUnin)
 
