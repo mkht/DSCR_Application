@@ -73,6 +73,9 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
 + **[string] ArgumentsForUninstall** (Write):
     + The arguments to be passed to the uninstaller during uninstallation if needed.
 
++ **[string] WorkingDirectory** (Write):
+    + Sets the working directory for the process to be started.
+
 + **[bool] UseUninstallString** (Write):
     + If specified this property as `$true`, This resource will use the standard uninstall method that is registered in the registry value of "UninstallString" to uninstall programs.
     + The default value is `$false`.
@@ -154,6 +157,10 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### Unreleased
+ + Add `WorkingDirectory` property.
+ + Changed to stop processing if multiple applications matching the search criteria.
+
 ### 2.7.0
  + Improve error handling.
 
