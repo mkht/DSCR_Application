@@ -414,34 +414,20 @@ function Set-TargetResource {
 
         if ([System.IO.Path]::GetExtension($Installer) -eq '.msi') {
             $Arg.Insert(0, ('/{0} "{1}"' -f $msiOpt, $Installer))
-
-            $CommandParam = @{
-                FilePath = 'msiexec.exe'
-                ArgumentList = $Arg
-            }
-
-            if($WorkingDirectory){
-                $CommandParam.WorkingDirectory = $WorkingDirectory
-            }
-
-            Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f 'msiexec.exe', $Arg, $strInOrUnin)
-            $ExitCode = Start-Command @CommandParam -ErrorAction Stop
-            Write-Verbose ("{1} end. Exitcode: '{0}'" -f $ExitCode, $strInOrUnin)
+            $Installer = 'msiexec.exe'
         }
-        else {
-            $CommandParam = @{
-                FilePath = $Installer
-                ArgumentList = $Arg
-            }
 
-            if($WorkingDirectory){
-                $CommandParam.WorkingDirectory = $WorkingDirectory
-            }
-
-            Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
-            $ExitCode = Start-Command -FilePath $Installer -ArgumentList $Arg -ErrorAction Stop
-            Write-Verbose ("{1} end. Exitcode: '{0}'" -f $ExitCode, $strInOrUnin)
+        $CommandParam = @{
+            FilePath = $Installer
+            ArgumentList = $Arg
         }
+        if($WorkingDirectory){
+            $CommandParam.WorkingDirectory = $WorkingDirectory
+        }
+
+        Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
+        $ExitCode = Start-Command @CommandParam -ErrorAction Stop
+        Write-Verbose ("{1} end. ExitCode: '{0}'" -f $ExitCode, $strInOrUnin)
 
         if (-not ($ReturnCode -contains $ExitCode)) {
             throw ("The exit code {0} was not expected. Configuration is likely not correct" -f $ExitCode)
