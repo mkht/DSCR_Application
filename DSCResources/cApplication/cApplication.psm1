@@ -326,7 +326,7 @@ function Set-TargetResource {
         Invoke-ScriptBlock -ScriptBlockString $PreAction
     }
     catch [Exception] {
-        Write-Error $_.Exception
+        Write-Error -Exception $_.Exception
     }
 
     $private:TempFolder = $env:TEMP
@@ -446,7 +446,7 @@ function Set-TargetResource {
         }
     }
     catch [Exception] {
-        Write-Error $_.Exception
+        Write-Error -Exception $_.Exception
     }
     finally {
         if ($PreCopyTo -and (Test-Path $PreCopyTo -ErrorAction SilentlyContinue)) {
@@ -467,7 +467,7 @@ function Set-TargetResource {
         Invoke-ScriptBlock -ScriptBlockString $PostAction
     }
     catch [Exception] {
-        Write-Error $_.Exception
+        Write-Error -Exception $_.Exception
     }
 
 } # end of Set-TargetResource
@@ -592,7 +592,7 @@ function Get-RemoteFile {
                 }
             }
             catch [Exception] {
-                Write-Error $_.Exception
+                Write-Error -Exception $_.Exception
             }
             finally {
                 if (Get-PSDrive | Where-Object { $_.Name -eq $tmpDriveName }) {
@@ -774,7 +774,7 @@ function Get-RedirectedUrl {
         }
     }
     catch {
-        Write-Error $_.Exception
+        Write-Error -Exception $_.Exception
     }
 }
 
