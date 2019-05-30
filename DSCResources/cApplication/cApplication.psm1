@@ -418,10 +418,10 @@ function Set-TargetResource {
         }
 
         $CommandParam = @{
-            FilePath = $Installer
+            FilePath     = $Installer
             ArgumentList = $Arg
         }
-        if($WorkingDirectory){
+        if ($WorkingDirectory) {
             $CommandParam.WorkingDirectory = $WorkingDirectory
         }
 
@@ -457,7 +457,7 @@ function Set-TargetResource {
             Write-Verbose ("Remove temp files")
             Remove-Item $Installer -Force -Recurse > $null
         }
-        if (Get-PSDrive | Where-Object {$_.Name -eq $tmpDriveName}) {
+        if (Get-PSDrive | Where-Object { $_.Name -eq $tmpDriveName }) {
             Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
         }
     }
@@ -595,7 +595,7 @@ function Get-RemoteFile {
                 Write-Error $_.Exception
             }
             finally {
-                if (Get-PSDrive | Where-Object {$_.Name -eq $tmpDriveName}) {
+                if (Get-PSDrive | Where-Object { $_.Name -eq $tmpDriveName }) {
                     Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
                 }
             }
@@ -673,24 +673,24 @@ function Get-InstalledProgram {
     }
 
     $local:InstalledPrograms = @()
-    $local:InstalledPrograms += Get-ChildItem $UninstallRegMachine | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DisplayName}
+    $local:InstalledPrograms += Get-ChildItem $UninstallRegMachine | ForEach-Object { Get-ItemProperty $_.PSPath } | Where-Object { $_.DisplayName }
     if (Test-Path $UninstallRegUser) {
-        $local:InstalledPrograms += Get-ChildItem $UninstallRegUser | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DisplayName}
+        $local:InstalledPrograms += Get-ChildItem $UninstallRegUser | ForEach-Object { Get-ItemProperty $_.PSPath } | Where-Object { $_.DisplayName }
     }
 
     switch ($PsCmdlet.ParameterSetName) {
         'Name' {
             if ($Fuzzy) {
-                $Program = $InstalledPrograms | Where-Object {$_.DisplayName -match $Name} | Select-Object -First 1
+                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -match $Name } | Select-Object -First 1
             }
             else {
-                $Program = $InstalledPrograms | Where-Object {$_.DisplayName -eq $Name} | Select-Object -First 1
+                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -eq $Name } | Select-Object -First 1
             }
             break
         }
         'Id' {
             $ProductId = Format-ProductId -ProductId $ProductId
-            $Program = $InstalledPrograms | Where-Object {$_.PSChildName -eq $ProductId} | Select-Object -First 1
+            $Program = $InstalledPrograms | Where-Object { $_.PSChildName -eq $ProductId } | Select-Object -First 1
             break
         }
     }
@@ -797,11 +797,11 @@ function Start-Command {
     $ProcessInfo.FileName = $FilePath
     $ProcessInfo.UseShellExecute = $false
     $ProcessInfo.Arguments = [string]$ArgumentList
-    if($PSBoundParameters.ContainsKey('WorkingDirectory')){
-        if(-not (Test-Path -LiteralPath $WorkingDirectory -PathType Container)){
+    if ($PSBoundParameters.ContainsKey('WorkingDirectory')) {
+        if (-not (Test-Path -LiteralPath $WorkingDirectory -PathType Container)) {
             Write-Warning ('Specified working directory path is not exist.')
         }
-        else{
+        else {
             $ProcessInfo.WorkingDirectory = $WorkingDirectory
         }
     }
