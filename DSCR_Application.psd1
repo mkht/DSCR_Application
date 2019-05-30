@@ -12,7 +12,7 @@
     # RootModule = ''
 
     # このモジュールのバージョン番号です。
-    ModuleVersion        = '2.7.0'
+    ModuleVersion        = '3.0.0'
 
     # サポートされている PSEditions
     # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@
     CompanyName          = ''
 
     # このモジュールの著作権情報
-    Copyright            = '(c) 2018 mkht. All rights reserved.'
+    Copyright            = '(c) 2019 mkht. All rights reserved.'
 
     # このモジュールの機能の説明
     Description          = 'PowerShell DSC Resource to Install / Uninstall Windows Desktop Applications.'

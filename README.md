@@ -157,7 +157,7 @@ Configuration Example3
 
 ---
 ## ChangeLog
-### Unreleased
+### 3.0.0
  + Add `WorkingDirectory` property.
  + Changed to stop processing if multiple applications matching the search criteria.
 
