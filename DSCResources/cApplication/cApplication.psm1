@@ -125,6 +125,9 @@ function Test-TargetResource {
         [string]
         $ArgumentsForUninstall,
 
+        [string]
+        $WorkingDirectory,
+
         [bool]
         $UseUninstallString = $false,
 
@@ -258,6 +261,9 @@ function Set-TargetResource {
 
         [string]
         $ArgumentsForUninstall,
+
+        [string]
+        $WorkingDirectory,
 
         [bool]
         $UseUninstallString = $false,
@@ -408,11 +414,30 @@ function Set-TargetResource {
 
         if ([System.IO.Path]::GetExtension($Installer) -eq '.msi') {
             $Arg.Insert(0, ('/{0} "{1}"' -f $msiOpt, $Installer))
+
+            $CommandParam = @{
+                FilePath = 'msiexec.exe'
+                ArgumentList = $Arg
+            }
+
+            if($WorkingDirectory){
+                $CommandParam.WorkingDirectory = $WorkingDirectory
+            }
+
             Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f 'msiexec.exe', $Arg, $strInOrUnin)
-            $ExitCode = Start-Command -FilePath 'msiexec.exe' -ArgumentList $Arg -ErrorAction Stop
+            $ExitCode = Start-Command @CommandParam -ErrorAction Stop
             Write-Verbose ("{1} end. Exitcode: '{0}'" -f $ExitCode, $strInOrUnin)
         }
         else {
+            $CommandParam = @{
+                FilePath = $Installer
+                ArgumentList = $Arg
+            }
+
+            if($WorkingDirectory){
+                $CommandParam.WorkingDirectory = $WorkingDirectory
+            }
+
             Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
             $ExitCode = Start-Command -FilePath $Installer -ArgumentList $Arg -ErrorAction Stop
             Write-Verbose ("{1} end. Exitcode: '{0}'" -f $ExitCode, $strInOrUnin)
@@ -777,12 +802,23 @@ function Start-Command {
         [Parameter(Position = 1)]
         [string[]]$ArgumentList,
 
+        [Parameter()]
+        [string]$WorkingDirectory,
+
         [int]$Timeout = [int]::MaxValue
     )
     $ProcessInfo = New-Object System.Diagnostics.ProcessStartInfo
     $ProcessInfo.FileName = $FilePath
     $ProcessInfo.UseShellExecute = $false
     $ProcessInfo.Arguments = [string]$ArgumentList
+    if($PSBoundParameters.ContainsKey('WorkingDirectory')){
+        if(-not (Test-Path -LiteralPath $WorkingDirectory -PathType Container)){
+            Write-Warning ('Specified working directory path is not exist.')
+        }
+        else{
+            $ProcessInfo.WorkingDirectory = $WorkingDirectory
+        }
+    }
     $Process = New-Object System.Diagnostics.Process
     $Process.StartInfo = $ProcessInfo
     $Process.Start() > $null

@@ -1,4 +1,4 @@
-[ClassVersion("1.0.0"),FriendlyName("cApplication")] 
+[ClassVersion("1.0.0"),FriendlyName("cApplication")]
 class cApplication : OMI_BaseResource
 {
   [write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
@@ -11,6 +11,7 @@ class cApplication : OMI_BaseResource
   [write] boolean NoRestart;
   [write] string Arguments;
   [write] string ArgumentsForUninstall;
+  [write] string WorkingDirectory;
   [write] boolean UseUninstallString;
   [write,EmbeddedInstance("MSFT_Credential")] string Credential;
   [write] uint32 ReturnCode[];
