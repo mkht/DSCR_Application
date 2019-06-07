@@ -65,10 +65,6 @@ function Get-TargetResource {
         }
         return $returnValue
     }
-    elseif ($Program.Length -gt 1) {
-        $Program | ForEach-Object { Write-Verbose ('The application "{0}" is installed.' -f $_.DisplayName) }
-        Write-Error ('Multiple applications matching the search criteria are found. Search results must be unique.')
-    }
     else {
         Write-Verbose ('The application "{0}" is installed.' -f $Program.DisplayName)
         $ProgramInfo = @{
@@ -687,16 +683,16 @@ function Get-InstalledProgram {
     switch ($PsCmdlet.ParameterSetName) {
         'Name' {
             if ($Fuzzy) {
-                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -match $Name }
+                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -match $Name } | Select-Object -First 1
             }
             else {
-                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -eq $Name }
+                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -eq $Name } | Select-Object -First 1
             }
             break
         }
         'Id' {
             $ProductId = Format-ProductId -ProductId $ProductId
-            $Program = $InstalledPrograms | Where-Object { $_.PSChildName -eq $ProductId }
+            $Program = $InstalledPrograms | Where-Object { $_.PSChildName -eq $ProductId } | Select-Object -First 1
             break
         }
     }
