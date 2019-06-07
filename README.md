@@ -157,6 +157,10 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### 3.0.1
+ + Revert the changes "Changed to stop processing if multiple applications matching the search criteria." in `3.0.0`.
+   This changes happens an application error in some senarios. 
+
 ### 3.0.0
  + Add `WorkingDirectory` property.
  + Changed to stop processing if multiple applications matching the search criteria.
