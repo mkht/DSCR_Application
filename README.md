@@ -157,9 +157,12 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### 3.1.0
+ + Enable TLS 1.2 when the file download from web. (only if it has not enabled)
+
 ### 3.0.1
  + Revert the changes "Changed to stop processing if multiple applications matching the search criteria." in `3.0.0`.
-   This changes happens an application error in some senarios. 
+   This changes happens an application error in some scenarios. 
 
 ### 3.0.0
  + Add `WorkingDirectory` property.

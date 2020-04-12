@@ -558,6 +558,7 @@ function Get-RemoteFile {
                 }
                 elseif ($tempPath.Scheme -match 'http|https|ftp') {
                     # Download from Web
+                    Enable-TLS12
                     if ($redUri = Get-RedirectedUrl $tempPath.AbsoluteUri -ErrorAction SilentlyContinue) {
                         # When it is not a file direct link, obtain the file name of the redirect destination(issue #1)
                         $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($redUri.LocalPath))
@@ -815,6 +816,19 @@ function Start-Command {
         Write-Error ('Process timeout. Terminated. (Timeout:{0}s, Process:{1})' -f ($Timeout * 0.001), $FilePath)
     }
     $Process.ExitCode
+}
+
+
+function Enable-TLS12 {
+    # Enable TLS1.2 in the current session (only if it has not enabled)
+    try {
+        if (([Net.ServicePointManager]::SecurityProtocol -ne [Net.SecurityProtocolType]::SystemDefault) -and (-not ([Net.ServicePointManager]::SecurityProtocol -band [Net.SecurityProtocolType]::Tls12))) {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+        }
+    }
+    catch {
+        # Ignore all exceptions
+    }
 }
 
 Export-ModuleMember -Function *-TargetResource
