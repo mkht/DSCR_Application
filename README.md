@@ -157,6 +157,10 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### 3.1.1
+ + Fixed: Test-TargetResource fails if there is an app that has some wildcard chars. [#8](https://github.com/mkht/DSCR_Application/issues/8)
+ + Avoid positional parameters. [#10](https://github.com/mkht/DSCR_Application/issues/10)
+
 ### 3.1.0
  + Enable TLS 1.2 when the file download from web. (only if it has not enabled)
 
