@@ -35,15 +35,15 @@ function Get-TargetResource {
     # Get Application info
     # $InstalledCheckFilePath has highest priority
     if ($InstalledCheckFilePath) {
-        Write-Verbose ('InstalledCheckFilePath is specified. Whether an application exists or not is judged by whether or not the path exists.')
-        if (Test-Path $InstalledCheckFilePath) {
-            Write-Verbose ('"{0}" is exist.' -f $InstalledCheckFilePath)
+        Write-Verbose -Message ('InstalledCheckFilePath is specified. Whether an application exists or not is judged by whether or not the path exists.')
+        if (Test-Path -Path $InstalledCheckFilePath) {
+            Write-Verbose -Message ('"{0}" is exist.' -f $InstalledCheckFilePath)
             $Program = @{
                 DisplayName = $Name
             }
         }
         else {
-            Write-Verbose ('"{0}" is not exist.' -f $InstalledCheckFilePath)
+            Write-Verbose -Message ('"{0}" is not exist.' -f $InstalledCheckFilePath)
             $Program = $null
         }
     }
@@ -56,7 +56,7 @@ function Get-TargetResource {
     }
 
     if (-not $Program) {
-        Write-Verbose ('The application "{0}" is not installed.' -f $Name)
+        Write-Verbose -Message ('The application "{0}" is not installed.' -f $Name)
         $returnValue = @{
             Ensure        = [Ensure]::Absent
             Name          = ''
@@ -66,7 +66,7 @@ function Get-TargetResource {
         return $returnValue
     }
     else {
-        Write-Verbose ('The application "{0}" is installed.' -f $Program.DisplayName)
+        Write-Verbose -Message ('The application "{0}" is installed.' -f $Program.DisplayName)
         $ProgramInfo = @{
             Ensure          = 'Present'
             Name            = $Program.DisplayName
@@ -182,38 +182,38 @@ function Test-TargetResource {
     if ($Ensure -eq 'Absent') {
         switch ($ProgramInfo.Ensure) {
             'Absent' {
-                Write-Verbose ('Match desired state & current state. Return "True"')
+                Write-Verbose -Message ('Match desired state & current state. Return "True"')
                 return $true
             }
             'Present' {
-                Write-Verbose ('Mismatch desired state & current state. Return "False"')
+                Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
                 return $false
             }
             Default {
-                Write-Error 'Test failed (unexpected error)'
+                Write-Error -Message 'Test failed (unexpected error)'
             }
         }
     }
     else {
         switch ($ProgramInfo.Ensure) {
             'Absent' {
-                Write-Verbose ('Mismatch desired state & current state. Return "False"')
+                Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
                 return $false
             }
             'Present' {
                 if ($Version) {
                     if ($Version -ne $ProgramInfo.Version) {
-                        Write-Verbose ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
-                        Write-Verbose ('Mismatch desired state & current state. Return "False"')
+                        Write-Verbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
+                        Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
                         return $false
                     }
                 }
 
-                Write-Verbose ('Match desired state & current state. Return "True"')
+                Write-Verbose -Message ('Match desired state & current state. Return "True"')
                 return $true
             }
             Default {
-                Write-Error 'Test failed (unexpected error)'
+                Write-Error -Message 'Test failed (unexpected error)'
             }
         }
     }
@@ -301,23 +301,23 @@ function Set-TargetResource {
     )
 
     if (($Ensure -eq 'Absent') -and (!$UseUninstallString) -and (!$InstallerPath)) {
-        Write-Error ("InstallerPath is not specified. Skip Set-Configuration.")
+        Write-Error -Message ("InstallerPath is not specified. Skip Set-Configuration.")
         return
     }
     elseif (($Ensure -eq 'Present') -and (!$InstallerPath)) {
-        Write-Error ("InstallerPath is not specified. Skip Set-Configuration.")
+        Write-Error -Message ("InstallerPath is not specified. Skip Set-Configuration.")
         return
     }
 
     #PreCopy
     if ([string]::IsNullOrWhiteSpace($PreCopyFrom) -and $PreCopyTo) {
-        Write-Warning ('PreCopyTo parameter is specified, but PreCopyFrom is empty. You should specify both PreCopyFrom and PreCopyTo.')
+        Write-Warning -Message ('PreCopyTo parameter is specified, but PreCopyFrom is empty. You should specify both PreCopyFrom and PreCopyTo.')
     }
     elseif ($PreCopyFrom -and [string]::IsNullOrWhiteSpace($PreCopyTo)) {
-        Write-Warning ('PreCopyFrom parameter is specified, but PreCopyTo is empty. You should specify both PreCopyFrom and PreCopyTo.')
+        Write-Warning -Message ('PreCopyFrom parameter is specified, but PreCopyTo is empty. You should specify both PreCopyFrom and PreCopyTo.')
     }
     elseif ($PreCopyFrom -and $PreCopyTo) {
-        Write-Verbose ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom, $PreCopyTo)
+        Write-Verbose -Message ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom, $PreCopyTo)
         Get-RemoteFile -Path $PreCopyFrom -DestinationFolder $PreCopyTo -Credential $Credential -TimeoutSec $TimeoutSec -Force -ErrorAction Stop >$null
     }
 
@@ -339,7 +339,7 @@ function Set-TargetResource {
 
     try {
         if ($Ensure -eq 'Absent') {
-            Write-Verbose ('Ensure = "Absent". Try to uninstall an application.')
+            Write-Verbose -Message ('Ensure = "Absent". Try to uninstall an application.')
             $strInOrUnin = 'Uninstall'
             $msiOpt = 'x'
             $Arguments = $ArgumentsForUninstall
@@ -358,7 +358,7 @@ function Set-TargetResource {
                     throw ("Couldn't get UninstallString.")
                 }
 
-                Write-Verbose ('Use UninstallString for uninstall. ("{0}")' -f $ProgramInfo.UninstallString)
+                Write-Verbose -Message ('Use UninstallString for uninstall. ("{0}")' -f $ProgramInfo.UninstallString)
                 $UseWebFile = $false
                 if ($ProgramInfo.UninstallString -match '^(?<path>.+\.[a-z]{3})(?<args>.*)') {
                     $Installer = $Matches.path
@@ -370,7 +370,7 @@ function Set-TargetResource {
             }
         }
         else {
-            Write-Verbose ('Ensure = "Present". Try to install an application.')
+            Write-Verbose -Message ('Ensure = "Present". Try to install an application.')
             $strInOrUnin = 'Install'
             $msiOpt = 'i'
         }
@@ -378,14 +378,14 @@ function Set-TargetResource {
         if (($Ensure -eq 'Absent') -and $UseUninstallString) {
         }
         else {
-            Write-Verbose ('Use Installer ("{0}") for {1}. (if the path of installer as http/https/ftp. will download it)' -f $InstallerPath, $strInOrUnin)
+            Write-Verbose -Message ('Use Installer ("{0}") for {1}. (if the path of installer as http/https/ftp. will download it)' -f $InstallerPath, $strInOrUnin)
             if ($InstallerPath -match '^msiexec[.exe]?') {
                 #[SpecialTreat]If specified 'msiexec.exe', replace 'C:\Windows\System32\msiexec.exe'
-                $InstallerPath = (Join-Path $env:windir '\system32\msiexec.exe')
+                $InstallerPath = (Join-Path -Path $env:windir -ChildPath '\system32\msiexec.exe')
             }
             $private:tmpPath = [System.Uri]$InstallerPath
             if ($tmpPath.IsLoopback -or $tmpPath.IsUnc) {
-                Write-Verbose ('"{0}" is local file or remote unc file.' -f $tmpPath.LocalPath)
+                Write-Verbose -Message ('"{0}" is local file or remote unc file.' -f $tmpPath.LocalPath)
                 $UseWebFile = $false
                 if ($PSBoundParameters.Credential) {
                     New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tmpPath.LocalPath) -Credential $Credential -ErrorAction Stop > $null
@@ -402,13 +402,13 @@ function Set-TargetResource {
                     throw ("File '{0}' does not match expected hash value" -f $Installer)
                 }
                 else {
-                    Write-Verbose ("Hash check passed")
+                    Write-Verbose -Message ("Hash check passed")
                 }
             }
         }
 
         $Arg.Add($Arguments)
-        if (-not (Test-Path $Installer -PathType Leaf)) {
+        if (-not (Test-Path -LiteralPath $Installer -PathType Leaf)) {
             throw ("Installer file not found. ('{0}')" -f $Installer)
         }
 
@@ -423,26 +423,26 @@ function Set-TargetResource {
         }
         if ($WorkingDirectory) {
             $CommandParam.WorkingDirectory = $WorkingDirectory
-            Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}', WorkDir:'{3}'" -f $Installer, $Arg, $strInOrUnin, $WorkingDirectory)
+            Write-Verbose -Message ("{2} start. Installer:'{0}', Args:'{1}', WorkDir:'{3}'" -f $Installer, $Arg, $strInOrUnin, $WorkingDirectory)
         }
         else {
-            Write-Verbose ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
+            Write-Verbose -Message ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
         }
         $ExitCode = Start-Command @CommandParam -ErrorAction Stop
-        Write-Verbose ("{1} end. ExitCode: '{0}'" -f $ExitCode, $strInOrUnin)
+        Write-Verbose -Message ("{1} end. ExitCode: '{0}'" -f $ExitCode, $strInOrUnin)
 
         if (-not ($ReturnCode -contains $ExitCode)) {
             throw ("The exit code {0} was not expected. Configuration is likely not correct" -f $ExitCode)
         }
         else {
-            Write-Verbose ('{0} process exited successfully' -f $strInOrUnin)
+            Write-Verbose -Message ('{0} process exited successfully' -f $strInOrUnin)
         }
 
         if (-not $NoRestart) {
             $private:serverFeatureData = Invoke-CimMethod -Name 'GetServerFeature' -Namespace 'root\microsoft\windows\servermanager' -Class 'MSFT_ServerManagerTasks' -Arguments @{ BatchSize = 256 } -ErrorAction 'Ignore' -Verbose:$false
-            $private:registryData = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction 'Ignore'
+            $private:registryData = Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction 'Ignore'
             if (($serverFeatureData -and $serverFeatureData.RequiresReboot) -or $registryData -or ($exitcode -eq 3010) -or ($exitcode -eq 1641)) {
-                Write-Verbose "The machine requires a reboot"
+                Write-Verbose -Message "The machine requires a reboot"
                 $global:DSCMachineStatus = 1
             }
         }
@@ -452,14 +452,14 @@ function Set-TargetResource {
     }
     finally {
         if ($PreCopyTo -and (Test-Path $PreCopyTo -ErrorAction SilentlyContinue)) {
-            Write-Verbose ("Remove PreCopied file(s)")
-            Remove-Item $PreCopyTo -Force -Recurse > $null
+            Write-Verbose -Message ("Remove PreCopied file(s)")
+            Remove-Item -LiteralPath $PreCopyTo -Force -Recurse > $null
         }
         if ($UseWebFile -and $Installer -and (Test-Path $Installer -PathType Leaf -ErrorAction SilentlyContinue)) {
-            Write-Verbose ("Remove temp files")
-            Remove-Item $Installer -Force -Recurse > $null
+            Write-Verbose -Message ("Remove temp files")
+            Remove-Item -LiteralPath $Installer -Force -Recurse > $null
         }
-        if (Get-PSDrive | Where-Object { $_.Name -eq $tmpDriveName }) {
+        if (Get-PSDrive | Where-Object -FilterScript { $_.Name -eq $tmpDriveName }) {
             Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
         }
     }
@@ -501,8 +501,8 @@ function Get-RemoteFile {
     )
     begin {
         if (-not (Test-Path $DestinationFolder -PathType Container)) {
-            Write-Verbose ('DestinationFolder "{0}" is not exist. Will create it.' -f $DestinationFolder)
-            New-Item $DestinationFolder -ItemType Directory -Force -ErrorAction Stop > $null
+            Write-Verbose -Message ('DestinationFolder "{0}" is not exist. Will create it.' -f $DestinationFolder)
+            New-Item -Path $DestinationFolder -ItemType Directory -Force -ErrorAction Stop > $null
         }
     }
 
@@ -521,10 +521,10 @@ function Get-RemoteFile {
                 # Depending on the location of the installer processing branch (local or shared folder or Web)
                 if ($tempPath.IsLoopback -and (!$tempPath.IsUnc)) {
                     # Local file
-                    Write-Verbose ('"{0}" is local file.' -f $tempPath.LocalPath)
+                    Write-Verbose -Message ('"{0}" is local file.' -f $tempPath.LocalPath)
                     $valid = $true
                     $OutFile = $tempPath.LocalPath
-                    Write-Verbose ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder)
+                    Write-Verbose -Message ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder)
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse -PassThru:$PassThru
                 }
                 elseif ($tempPath.IsUnc) {
@@ -534,18 +534,18 @@ function Get-RemoteFile {
                         New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tempPath.LocalPath) -Credential $Credential -ErrorAction Stop > $null
                     }
                     # Copy to Local
-                    $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($tempPath.LocalPath))
-                    if (Test-Path $OutFile -PathType Leaf) {
+                    $OutFile = Join-Path -Path $DestinationFolder -ChildPath ([System.IO.Path]::GetFileName($tempPath.LocalPath))
+                    if (Test-Path -LiteralPath $OutFile -PathType Leaf) {
                         if ($tempPath.LocalPath -eq $OutFile) {
                             if ($PassThru) {
-                                if (Test-Path $OutFile) {
-                                    Get-Item $OutFile
+                                if (Test-Path -LiteralPath $OutFile) {
+                                    Get-Item -LiteralPath $OutFile
                                 }
                             }
                             continue
                         }
                         elseif ($Force) {
-                            Write-Warning ('"{0}" will be overwritten.' -f $OutFile)
+                            Write-Warning -Message ('"{0}" will be overwritten.' -f $OutFile)
                         }
                         else {
                             $valid = $false
@@ -553,22 +553,22 @@ function Get-RemoteFile {
                         }
                     }
 
-                    Write-Verbose ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder)
+                    Write-Verbose -Message ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder)
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse
                 }
                 elseif ($tempPath.Scheme -match 'http|https|ftp') {
                     # Download from Web
                     Enable-TLS12
-                    if ($redUri = Get-RedirectedUrl $tempPath.AbsoluteUri -ErrorAction SilentlyContinue) {
+                    if ($redUri = Get-RedirectedUrl -URL $tempPath.AbsoluteUri -ErrorAction SilentlyContinue) {
                         # When it is not a file direct link, obtain the file name of the redirect destination(issue #1)
-                        $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($redUri.LocalPath))
+                        $OutFile = Join-Path -Path $DestinationFolder -ChildPath ([System.IO.Path]::GetFileName($redUri.LocalPath))
                     }
                     else {
-                        $OutFile = Join-Path $DestinationFolder ([System.IO.Path]::GetFileName($tempPath.LocalPath))
+                        $OutFile = Join-Path -Path $DestinationFolder -ChildPath ([System.IO.Path]::GetFileName($tempPath.LocalPath))
                     }
-                    if (Test-Path $OutFile -PathType Leaf) {
+                    if (Test-Path -LiteralPath $OutFile -PathType Leaf) {
                         if ($Force) {
-                            Write-Warning ('"{0}" will be overwritten.' -f $OutFile)
+                            Write-Warning -Message ('"{0}" will be overwritten.' -f $OutFile)
                         }
                         else {
                             $valid = $false
@@ -576,7 +576,7 @@ function Get-RemoteFile {
                         }
                     }
 
-                    Write-Verbose ("Download file from '{0}' to '{1}'" -f $tempPath.AbsoluteUri, $OutFile)
+                    Write-Verbose -Message ("Download file from '{0}' to '{1}'" -f $tempPath.AbsoluteUri, $OutFile)
                     #Suppress Progress bar for faster download
                     $private:origProgress = $ProgressPreference
                     $ProgressPreference = 'SilentlyContinue'
@@ -589,8 +589,8 @@ function Get-RemoteFile {
                 }
 
                 if ($valid -and $OutFile -and $PassThru) {
-                    if (Test-Path $OutFile) {
-                        Get-Item $OutFile
+                    if (Test-Path -LiteralPath $OutFile) {
+                        Get-Item -LiteralPath $OutFile
                     }
                 }
             }
@@ -598,7 +598,7 @@ function Get-RemoteFile {
                 Write-Error -Exception $_.Exception
             }
             finally {
-                if (Get-PSDrive | Where-Object { $_.Name -eq $tmpDriveName }) {
+                if (Get-PSDrive | Where-Object -FilterScript { $_.Name -eq $tmpDriveName }) {
                     Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
                 }
             }
@@ -632,13 +632,13 @@ function Assert-FileHash {
     )
 
     Process {
-        $private:hash = Get-FileHash -Path $Path -Algorithm $Algorithm | Select-Object Hash
+        $private:hash = Get-FileHash -Path $Path -Algorithm $Algorithm | Select-Object -Property Hash
         if ($FileHash -eq $hash.Hash) {
-            Write-Verbose ('Match file hash of "{1}". ({0})' -f $hash.Hash, $Path)
+            Write-Verbose -Message ('Match file hash of "{1}". ({0})' -f $hash.Hash, $Path)
             return $true
         }
         else {
-            Write-Verbose ('Not match file hash of "{1}". ({0})' -f $hash.Hash, $Path)
+            Write-Verbose -Message ('Not match file hash of "{1}". ({0})' -f $hash.Hash, $Path)
             return $false
         }
     }
@@ -676,24 +676,24 @@ function Get-InstalledProgram {
     }
 
     $local:InstalledPrograms = @()
-    $local:InstalledPrograms += Get-ChildItem $UninstallRegMachine | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object { $_.DisplayName }
+    $local:InstalledPrograms += Get-ChildItem -LiteralPath $UninstallRegMachine | ForEach-Object -Process { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object -FilterScript { $_.DisplayName }
     if (Test-Path $UninstallRegUser) {
-        $local:InstalledPrograms += Get-ChildItem $UninstallRegUser | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object { $_.DisplayName }
+        $local:InstalledPrograms += Get-ChildItem -LiteralPath $UninstallRegUser | ForEach-Object -Process { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object -FilterScript { $_.DisplayName }
     }
 
     switch ($PsCmdlet.ParameterSetName) {
         'Name' {
             if ($Fuzzy) {
-                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -match $Name } | Select-Object -First 1
+                $Program = $InstalledPrograms | Where-Object -FilterScript { $_.DisplayName -match $Name } | Select-Object -First 1
             }
             else {
-                $Program = $InstalledPrograms | Where-Object { $_.DisplayName -eq $Name } | Select-Object -First 1
+                $Program = $InstalledPrograms | Where-Object -FilterScript { $_.DisplayName -eq $Name } | Select-Object -First 1
             }
             break
         }
         'Id' {
             $ProductId = Format-ProductId -ProductId $ProductId
-            $Program = $InstalledPrograms | Where-Object { $_.PSChildName -eq $ProductId } | Select-Object -First 1
+            $Program = $InstalledPrograms | Where-Object -FilterScript { $_.PSChildName -eq $ProductId } | Select-Object -First 1
             break
         }
     }
@@ -723,7 +723,7 @@ function Format-ProductId {
         return $identifyingNumber
     }
     catch {
-        Write-Error ("The specified ProductId ({0}) is not a valid Guid" -f $ProductId)
+        Write-Error -Message ("The specified ProductId ({0}) is not a valid Guid" -f $ProductId)
     }
 }
 
@@ -745,7 +745,7 @@ function Invoke-ScriptBlock {
 
     try {
         $scriptBlock = [ScriptBlock]::Create($ScriptBlockString).GetNewClosure()
-        Write-Verbose ('Execute ScriptBlock')
+        Write-Verbose -Message ('Execute ScriptBlock')
         if (@($Arguments).Count -ge 1) {
             $scriptBlock.Invoke($Arguments) | Out-String -Stream | Write-Verbose
         }
@@ -796,24 +796,24 @@ function Start-Command {
 
         [int]$Timeout = [int]::MaxValue
     )
-    $ProcessInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $ProcessInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
     $ProcessInfo.FileName = $FilePath
     $ProcessInfo.UseShellExecute = $false
     $ProcessInfo.Arguments = [string]$ArgumentList
     if ($PSBoundParameters.ContainsKey('WorkingDirectory')) {
         if (-not (Test-Path -LiteralPath $WorkingDirectory -PathType Container)) {
-            Write-Warning ('Specified working directory path is not exist.')
+            Write-Warning -Message ('Specified working directory path is not exist.')
         }
         else {
             $ProcessInfo.WorkingDirectory = $WorkingDirectory
         }
     }
-    $Process = New-Object System.Diagnostics.Process
+    $Process = New-Object -TypeName System.Diagnostics.Process
     $Process.StartInfo = $ProcessInfo
     $Process.Start() > $null
     if (!$Process.WaitForExit($Timeout)) {
         $Process.Kill()
-        Write-Error ('Process timeout. Terminated. (Timeout:{0}s, Process:{1})' -f ($Timeout * 0.001), $FilePath)
+        Write-Error -Message ('Process timeout. Terminated. (Timeout:{0}s, Process:{1})' -f ($Timeout * 0.001), $FilePath)
     }
     $Process.ExitCode
 }
