@@ -395,6 +395,7 @@ function Set-TargetResource {
             else {
                 $UseWebFile = $true
                 $Installer = (Get-RemoteFile -Path $InstallerPath -DestinationFolder $TempFolder -Credential $Credential -TimeoutSec $TimeoutSec -Force -PassThru -ErrorAction Stop)
+                $DownloadedFile = $Installer
             }
 
             if ($FileHash) {
@@ -455,9 +456,9 @@ function Set-TargetResource {
             Write-Verbose -Message ("Remove PreCopied file(s)")
             Remove-Item -LiteralPath $PreCopyTo -Force -Recurse > $null
         }
-        if ($UseWebFile -and $Installer -and (Test-Path $Installer -PathType Leaf -ErrorAction SilentlyContinue)) {
+        if ($UseWebFile -and $DownloadedFile -and (Test-Path $DownloadedFile -PathType Leaf -ErrorAction SilentlyContinue)) {
             Write-Verbose -Message ("Remove temp files")
-            Remove-Item -LiteralPath $Installer -Force -Recurse > $null
+            Remove-Item -LiteralPath $DownloadedFile -Force -Recurse > $null
         }
         if (Get-PSDrive | Where-Object -FilterScript { $_.Name -eq $tmpDriveName }) {
             Remove-PSDrive -Name $tmpDriveName -Force -ErrorAction SilentlyContinue
