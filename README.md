@@ -157,6 +157,9 @@ Configuration Example3
 
 ---
 ## ChangeLog
+### 3.1.2
+ + Fixed: Error occurred after installation if the URL of a MSI installer is specified.
+
 ### 3.1.1
  + Fixed: Test-TargetResource fails if there is an app that has some wildcard chars. [#8](https://github.com/mkht/DSCR_Application/issues/8)
  + Avoid positional parameters. [#10](https://github.com/mkht/DSCR_Application/issues/10)
