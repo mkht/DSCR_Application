@@ -39,6 +39,12 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
     + Indicates the expected version string of the application.
     + When the property not specified, This resource simply tests whether the application is installed or not. But when specified, This also tests the installed version is match the expected one.
 
++ **[bool] UseSemVer** (Write):
+    + If specified this property as `$true`, you can use a [node-semver like range syntax](https://github.com/npm/node-semver#ranges) for testing the version of the application.
+    + Please see the [usage examples](#examples).
+    + The default value is `$false`.
+    + If the `Version` property is not specified, this property will be ignored.
+
 + **[string] InstalledCheckFilePath** (Write):
     + The file path of the application should be created.
     + If this property is specified, This resource judge whether the application is installed or not by whether the path exists or not.
@@ -155,8 +161,28 @@ Configuration Example3
 }
 ```
 
++ **Example 4**: Install the Microsoft Edge only if the machine don't have it or the version is less than 80.0. [How to use `USeSemVer` option]  
+```Powershell
+Configuration Example4
+{
+    Import-DscResource -ModuleName DSCR_Application
+    cApplication MSEdge80+
+    {
+        Name = 'Microsoft Edge'
+        Version = '>=80.0'  # This range expression indicates that version 80.0 or higher is desirable
+        UseSemVer = $true
+        InstallerPath = 'C:\MicrosoftEdgeEnterpriseX64.msi'
+        Arguments = '/qn'
+    }
+}
+```
+
 ---
 ## ChangeLog
+### 3.2.0
+ + Add `UseSemVer` property.  
+   You can test if the desired version of the application is installed using [node-semver like range syntax](https://github.com/npm/node-semver#ranges).
+
 ### 3.1.2
  + Fixed: Error occurred after installation if the URL of a MSI installer is specified.
 
