@@ -17,6 +17,7 @@ class cApplication : OMI_BaseResource
   [write] uint32 ReturnCode[];
   [write] uint32 TimeoutSec;
   [write] string Version;
+  [write] boolean UseSemVer;
   [read] string Publisher;
   [read] string UninstallString;
   [read] boolean Installed;

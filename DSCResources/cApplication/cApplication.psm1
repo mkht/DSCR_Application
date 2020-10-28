@@ -1,3 +1,4 @@
+
 Enum Ensure{
     Absent
     Present
@@ -119,6 +120,9 @@ function Test-TargetResource {
         [string]
         $Version,
 
+        [bool]
+        $UseSemVer = $false,
+
         [string]
         $Arguments,
 
@@ -202,10 +206,32 @@ function Test-TargetResource {
             }
             'Present' {
                 if ($Version) {
-                    if ($Version -ne $ProgramInfo.Version) {
-                        Write-Verbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
-                        Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
-                        return $false
+                    if ($UseSemVer) {
+                        $null = Load-SemVer
+                        $SemVer = $null
+                        if (-not [pspm.SemVer]::TryParse($ProgramInfo.Version, [ref]$SemVer)) {
+                            Write-Error -Message 'The version number of this application does not follow the Semantic Versioning specification.'
+                        }
+                        else {
+                            try {
+                                $Range = [pspm.SemVerRange]::new($Version)
+                                if (-not $Range.IsSatisfied($SemVer)) {
+                                    Write-Verbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
+                                    Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
+                                    return $false
+                                }
+                            }
+                            catch {
+                                Write-Error -Exception $_.Exception
+                            }
+                        }
+                    }
+                    else {
+                        if ($Version -ne $ProgramInfo.Version) {
+                            Write-Verbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
+                            Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
+                            return $false
+                        }
                     }
                 }
 
@@ -255,6 +281,9 @@ function Set-TargetResource {
 
         [string]
         $Version,
+
+        [bool]
+        $UseSemVer = $false,
 
         [string]
         $Arguments,
@@ -831,5 +860,16 @@ function Enable-TLS12 {
         # Ignore all exceptions
     }
 }
+
+
+function Load-SemVer {
+    $SemVerDllPath = Join-Path $PSScriptRoot '..\..\Libs\SemVer\SemVer.dll'
+    if (-not ('pspm.SemVer' -as [Type])) {
+        if (Test-Path -LiteralPath $SemVerDllPath -PathType Leaf) {
+            Add-Type -LiteralPath $SemVerDllPath -ErrorAction Stop
+        }
+    }
+}
+
 
 Export-ModuleMember -Function *-TargetResource
