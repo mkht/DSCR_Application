@@ -179,6 +179,9 @@ Configuration Example4
 
 ---
 ## ChangeLog
+### 3.2.1
+ + Improved the behavior when downloading files from network that behind of a proxy.
+
 ### 3.2.0
  + Add `UseSemVer` property.  
    You can test if the desired version of the application is installed using [node-semver like range syntax](https://github.com/npm/node-semver#ranges).
