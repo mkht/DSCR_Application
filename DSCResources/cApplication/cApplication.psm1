@@ -589,7 +589,8 @@ function Get-RemoteFile {
                 elseif ($tempPath.Scheme -match 'http|https|ftp') {
                     # Download from Web
                     Enable-TLS12
-                    if ($redUri = Get-RedirectedUrl -URL $tempPath.AbsoluteUri -ErrorAction SilentlyContinue) {
+                    $Proxy = Get-ProxySetting -TargetUrl $tempPath.AbsoluteUri -ErrorAction Ignore
+                    if ($redUri = Get-RedirectedUrl -URL $tempPath.AbsoluteUri -Proxy $Proxy -ErrorAction Ignore) {
                         # When it is not a file direct link, obtain the file name of the redirect destination(issue #1)
                         $OutFile = Join-Path -Path $DestinationFolder -ChildPath ([System.IO.Path]::GetFileName($redUri.LocalPath))
                     }
@@ -610,7 +611,7 @@ function Get-RemoteFile {
                     #Suppress Progress bar for faster download
                     $private:origProgress = $ProgressPreference
                     $ProgressPreference = 'SilentlyContinue'
-                    Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -TimeoutSec $TimeoutSec -ErrorAction stop
+                    Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -Proxy $Proxy.Address -TimeoutSec $TimeoutSec -ErrorAction stop
                     $ProgressPreference = $private:origProgress
                 }
                 else {
@@ -794,11 +795,18 @@ function Get-RedirectedUrl {
     [OutputType([System.Uri])]
     Param (
         [Parameter(Mandatory, Position = 0)]
-        [string]$URL
+        [string]$URL,
+
+        [Parameter()]
+        [AllowNull()]
+        [System.Net.IWebProxy]$Proxy
     )
 
     try {
         $request = [System.Net.WebRequest]::Create($URL)
+        if ($null -ne $Proxy) {
+            $request.Proxy = $Proxy
+        }
         $request.AllowAutoRedirect = $false
         $response = $request.GetResponse()
 
@@ -871,5 +879,108 @@ function Load-SemVer {
     }
 }
 
+
+function Get-ProxySetting {
+    [CmdletBinding()]
+    [OutputType([System.Net.WebProxy])]
+    param (
+        [Parameter(Mandatory = $false)]
+        [uri]$TargetUrl
+    )
+
+    # Proxy detection priority
+    # 0. Environment variable (http_proxy)
+    # 1. IE (GetSystemWebProxy)
+    # 2. WinHTTP (WinHttpGetDefaultProxyConfiguration)
+
+    $Proxy = $null
+
+    # 0. Environment Variable
+    if ($env:http_proxy) {
+        try {
+            $Proxy = [System.Net.WebProxy]::new($env:http_proxy)
+        }
+        catch [System.UriFormatException] {
+            Write-Error -Message ('Invalid proxy setting detected. The environment variable "http_proxy" is {0}' -f $env:http_proxy)
+        }
+        catch {
+            Write-Error -Exception $_.Exception
+        }
+    }
+
+    if ($Proxy) {
+        Write-Verbose -Message 'Find proxy setting in environment variable "http_proxy"'
+        return $Proxy
+    }
+
+    # 1. IE
+    if (-not $TargetUrl) { $TargetUrl = 'http://example.com' }
+    $webProxy = [System.Net.WebRequest]::GetSystemWebProxy()
+    if (($null -ne $webProxy) -and (-not $webProxy.IsBypassed($TargetUrl))) {
+        $Proxy = try { [System.Net.WebProxy]::new($webProxy.GetProxy($TargetUrl), $false) }catch { Write-Error -ErrorAction $_.exception }
+    }
+
+    if ($Proxy) {
+        Write-Verbose -Message 'Find proxy setting in the preferences of the Internet Explorer'
+        return $Proxy
+    }
+
+    # 2.WinHTTP
+    # Original code is written by itn3000 https://gist.github.com/itn3000/b414da5337b7d229d812ec3ddcffb446
+    if (-not ('WinHttp' -as [Type])) {
+        $CSharpCode = @'
+using System.Runtime.InteropServices;
+public enum WinHttpAccessType
+{
+    DefaultProxy = 0,
+    NamedProxy = 3,
+    NoProxy = 1
+}
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+public struct WINHTTP_PROXY_INFO
+{
+    public WinHttpAccessType AccessType;
+    public string Proxy;
+    public string Bypass;
+}
+public class WinHttp
+{
+    [DllImport("winhttp.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern bool WinHttpGetDefaultProxyConfiguration(ref WINHTTP_PROXY_INFO config);
+}
+'@
+        $null = Add-Type -TypeDefinition $CSharpCode -Language CSharp
+    }
+    $winHTTPProxy = New-Object WINHTTP_PROXY_INFO
+    $winHTTPProxy.AccessType = [WinHttpAccessType]::DefaultProxy
+    $null = [WinHttp]::WinHttpGetDefaultProxyConfiguration([ref]$winHTTPProxy)
+
+    if ($winHTTPProxy.AccessType -eq [WinHttpAccessType]::NamedProxy) {
+        $bypassLocal = $false
+        if (-not [string]::IsNullOrEmpty($winHTTPProxy.Bypass)) {
+            $BypassList = New-Object 'System.Collections.Generic.List[string]'
+            @($winHTTPProxy.Bypass -split ';').ForEach( {
+                    if ($_ -eq '<local>') {
+                        $bypassLocal = $true
+                    }
+                    else {
+                        $s = [regex]::Replace($_, '([$^\|.{}\[\]()+\\])', '\$1')
+                        $s = [regex]::Replace($s, '\*', '.*')
+                        $s = [regex]::Replace($s, '\?', '.')
+                        $BypassList.Add($s)
+                    }
+                })
+            $Proxy = try { [System.Net.WebProxy]::new($winHTTPProxy.Proxy, $bypassLocal, $BypassList.ToArray()) }catch { Write-Error -ErrorAction $_.exception }
+        }
+        else {
+            $Proxy = try { [System.Net.WebProxy]::new($winHTTPProxy.Proxy, $bypassLocal) }catch { Write-Error -ErrorAction $_.exception }
+        }
+    }
+
+    if ($Proxy) {
+        Write-Verbose -Message 'Find proxy setting in the winhttp'
+        return $Proxy
+    }
+}
 
 Export-ModuleMember -Function *-TargetResource
