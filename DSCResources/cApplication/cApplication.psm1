@@ -145,7 +145,12 @@ function Test-TargetResource {
         $ReturnCode = @( 0, 1641, 3010 ),
 
         [UInt32]
-        $TimeoutSec = 900,
+        [ValidateRange(0, 2147483)]
+        $ProcessTimeout = 2147483,
+
+        [UInt32]
+        [ValidateRange(0, 2147483647)]
+        $DownloadTimeout = 900,
 
         [string]
         $FileHash,
@@ -307,7 +312,12 @@ function Set-TargetResource {
         $ReturnCode = @( 0, 1641, 3010 ),
 
         [UInt32]
-        $TimeoutSec = 900,
+        [ValidateRange(0, 2147483)]
+        $ProcessTimeout = 2147483, #seconds
+
+        [UInt32]
+        [ValidateRange(0, 2147483647)]
+        $DownloadTimeout = 900, #seconds
 
         [string]
         $FileHash,
@@ -347,7 +357,7 @@ function Set-TargetResource {
     }
     elseif ($PreCopyFrom -and $PreCopyTo) {
         Write-Verbose -Message ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom, $PreCopyTo)
-        Get-RemoteFile -Path $PreCopyFrom -DestinationFolder $PreCopyTo -Credential $Credential -TimeoutSec $TimeoutSec -Force -ErrorAction Stop >$null
+        Get-RemoteFile -Path $PreCopyFrom -DestinationFolder $PreCopyTo -Credential $Credential -TimeoutSec $DownloadTimeout -Force -ErrorAction Stop >$null
     }
 
     #PreAction
@@ -407,7 +417,7 @@ function Set-TargetResource {
         if (($Ensure -eq 'Absent') -and $UseUninstallString) {
         }
         else {
-            Write-Verbose -Message ('Use Installer ("{0}") for {1}. (if the path of installer as http/https/ftp. will download it)' -f $InstallerPath, $strInOrUnin)
+            Write-Verbose -Message ('Use Installer ("{0}") for {1}. (if the path of an installer as http/https/ftp. will download it)' -f $InstallerPath, $strInOrUnin)
             if ($InstallerPath -match '^msiexec[.exe]?') {
                 #[SpecialTreat]If specified 'msiexec.exe', replace 'C:\Windows\System32\msiexec.exe'
                 $InstallerPath = (Join-Path -Path $env:windir -ChildPath '\system32\msiexec.exe')
@@ -423,7 +433,7 @@ function Set-TargetResource {
             }
             else {
                 $UseWebFile = $true
-                $Installer = (Get-RemoteFile -Path $InstallerPath -DestinationFolder $TempFolder -Credential $Credential -TimeoutSec $TimeoutSec -Force -PassThru -ErrorAction Stop)
+                $Installer = (Get-RemoteFile -Path $InstallerPath -DestinationFolder $TempFolder -Credential $Credential -TimeoutSec $DownloadTimeout -Force -PassThru -ErrorAction Stop)
                 $DownloadedFile = $Installer
             }
 
@@ -450,6 +460,7 @@ function Set-TargetResource {
         $CommandParam = @{
             FilePath     = $Installer
             ArgumentList = $Arg
+            Timeout      = $ProcessTimeout * 1000
         }
         if ($WorkingDirectory) {
             $CommandParam.WorkingDirectory = $WorkingDirectory
@@ -521,7 +532,7 @@ function Get-RemoteFile {
         [pscredential]$Credential,
 
         [Parameter()]
-        [int]$TimeoutSec = 0,
+        [int]$DownloadTimeout = 0,
 
         [Parameter()]
         [switch]$Force,
@@ -611,7 +622,7 @@ function Get-RemoteFile {
                     #Suppress Progress bar for faster download
                     $private:origProgress = $ProgressPreference
                     $ProgressPreference = 'SilentlyContinue'
-                    Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -Proxy $Proxy.Address -TimeoutSec $TimeoutSec -ErrorAction stop
+                    Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -Proxy $Proxy.Address -TimeoutSec $DownloadTimeout -ErrorAction stop
                     $ProgressPreference = $private:origProgress
                 }
                 else {
@@ -832,7 +843,8 @@ function Start-Command {
         [Parameter()]
         [string]$WorkingDirectory,
 
-        [int]$Timeout = [int]::MaxValue
+        [Parameter()]
+        [int]$Timeout = [int]::MaxValue #milliseconds
     )
     $ProcessInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
     $ProcessInfo.FileName = $FilePath
@@ -851,9 +863,13 @@ function Start-Command {
     $Process.Start() > $null
     if (!$Process.WaitForExit($Timeout)) {
         $Process.Kill()
-        Write-Error -Message ('Process timeout. Terminated. (Timeout:{0}s, Process:{1})' -f ($Timeout * 0.001), $FilePath)
+        Write-Warning -Message ('Process timeout. Terminated. (Timeout:{0}s, Process:{1})' -f ($Timeout * 0.001), $FilePath)
+        # Return timeout error code 0x000005B4
+        1460
     }
-    $Process.ExitCode
+    else {
+        $Process.ExitCode
+    }
 }
 
 

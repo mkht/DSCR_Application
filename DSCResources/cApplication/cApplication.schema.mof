@@ -15,7 +15,8 @@ class cApplication : OMI_BaseResource
   [write] boolean UseUninstallString;
   [write,EmbeddedInstance("MSFT_Credential")] string Credential;
   [write] uint32 ReturnCode[];
-  [write] uint32 TimeoutSec;
+  [write] uint32 ProcessTimeout;
+  [write] uint32 DownloadTimeout;
   [write] string Version;
   [write] boolean UseSemVer;
   [read] string Publisher;

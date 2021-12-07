@@ -61,9 +61,13 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
     + The credential for access to the installer on a remote source if needed.
     + :warning: If you want to run the installation as specific user, you need to use `PsDscRunAsCredential` standard property.
 
-+ **[UInt32] TimeoutSec** (Write):
++ **[UInt32] ProcessTimeout** (Write):
+    + The timeout seconds of installation process.
+    + The default value is `2147483`. (`0` to `2147483`)
+
++ **[UInt32] DownloadTimeout** (Write):
     + The timeout seconds of download the installer from http/https/ftp.
-    + The default value is `900`. (0 is infinite)
+    + The default value is `900`. (`0` is infinite)
 
 + **[string] FileHash** (Write):
     + The expected hash value of the installer file at the given path.
@@ -179,6 +183,11 @@ Configuration Example4
 
 ---
 ## ChangeLog
+### 4.0.0
+ + `TimeoutSec` property is changed to `DownloadTimeout`.
+ + Add `ProcessTimeout` property.
+ + Return `1460` instead of an error when process timeout occurs.
+
 ### 3.2.1
  + Improved the behavior when downloading files from network that behind of a proxy.
 
