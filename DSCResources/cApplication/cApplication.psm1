@@ -532,7 +532,7 @@ function Get-RemoteFile {
         [pscredential]$Credential,
 
         [Parameter()]
-        [int]$DownloadTimeout = 0,
+        [int]$TimeoutSec = 0,
 
         [Parameter()]
         [switch]$Force,

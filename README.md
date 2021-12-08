@@ -183,7 +183,7 @@ Configuration Example4
 
 ---
 ## ChangeLog
-### 4.0.0
+### 4.0.1
  + `TimeoutSec` property is changed to `DownloadTimeout`.
  + Add `ProcessTimeout` property.
  + Return `1460` instead of an error when process timeout occurs.
