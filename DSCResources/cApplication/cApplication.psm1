@@ -190,8 +190,16 @@ function Test-TargetResource {
     $global:GlobalLogLevel = $LogLevel
 
     if ($InstalledCheckScript) {
+        Write-MyVerbose -Message ('InstalledCheckScript is specified. Whether an application exists or not is judged by script invocation') -LogLevel Minimal
         $local:scriptBlock = [ScriptBlock]::Create($InstalledCheckScript)
-        return [bool]($local:scriptBlock.Invoke())
+        $ScriptResult = [bool]($local:scriptBlock.Invoke())
+        if ($ScriptResult) {
+            Write-MyVerbose -Message ('Match desired state & current state. Return "True"') -LogLevel Minimal
+        }
+        else {
+            Write-MyVerbose -Message ('Mismatch desired state & current state. Return "False"') -LogLevel Minimal
+        }
+        return $ScriptResult
     }
 
     $private:GetParam = @{
