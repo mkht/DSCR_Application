@@ -4,6 +4,13 @@ Enum Ensure{
     Present
 }
 
+Enum LogLevel{
+    None = 0
+    Minimal = 8
+    Moderate = 64
+    All = 256
+}
+
 function Get-TargetResource {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
@@ -30,21 +37,26 @@ function Get-TargetResource {
         $InstalledCheckFilePath,
 
         [bool]
-        $Fuzzy = $false
+        $Fuzzy = $false,
+
+        [LogLevel]
+        $LogLevel = [LogLevel]::All
     )
+
+    $global:GlobalLogLevel = $LogLevel
 
     # Get Application info
     # $InstalledCheckFilePath has highest priority
     if ($InstalledCheckFilePath) {
-        Write-Verbose -Message ('InstalledCheckFilePath is specified. Whether an application exists or not is judged by whether or not the path exists.')
+        Write-MyVerbose -Message ('InstalledCheckFilePath is specified. Whether an application exists or not is judged by whether or not the path exists.') -LogLevel Minimal
         if (Test-Path -Path $InstalledCheckFilePath) {
-            Write-Verbose -Message ('"{0}" is exist.' -f $InstalledCheckFilePath)
+            Write-MyVerbose -Message ('"{0}" is exist.' -f $InstalledCheckFilePath) -LogLevel Moderate
             $Program = @{
                 DisplayName = $Name
             }
         }
         else {
-            Write-Verbose -Message ('"{0}" is not exist.' -f $InstalledCheckFilePath)
+            Write-MyVerbose -Message ('"{0}" is not exist.' -f $InstalledCheckFilePath) -LogLevel Moderate
             $Program = $null
         }
     }
@@ -57,7 +69,7 @@ function Get-TargetResource {
     }
 
     if (-not $Program) {
-        Write-Verbose -Message ('The application "{0}" is not installed.' -f $Name)
+        Write-MyVerbose -Message ('The application "{0}" is not installed.' -f $Name) -LogLevel Minimal
         $returnValue = @{
             Ensure        = [Ensure]::Absent
             Name          = ''
@@ -67,7 +79,7 @@ function Get-TargetResource {
         return $returnValue
     }
     else {
-        Write-Verbose -Message ('The application "{0}" is installed.' -f $Program.DisplayName)
+        Write-MyVerbose -Message ('The application "{0}" is installed.' -f $Program.DisplayName) -LogLevel Minimal
         $ProgramInfo = @{
             Ensure          = 'Present'
             Name            = $Program.DisplayName
@@ -169,8 +181,13 @@ function Test-TargetResource {
         $PreCopyFrom,
 
         [string]
-        $PreCopyTo
+        $PreCopyTo,
+
+        [LogLevel]
+        $LogLevel = [LogLevel]::All
     )
+
+    $global:GlobalLogLevel = $LogLevel
 
     if ($InstalledCheckScript) {
         $local:scriptBlock = [ScriptBlock]::Create($InstalledCheckScript)
@@ -191,11 +208,11 @@ function Test-TargetResource {
     if ($Ensure -eq 'Absent') {
         switch ($ProgramInfo.Ensure) {
             'Absent' {
-                Write-Verbose -Message ('Match desired state & current state. Return "True"')
+                Write-MyVerbose -Message ('Match desired state & current state. Return "True"') -LogLevel Minimal
                 return $true
             }
             'Present' {
-                Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
+                Write-MyVerbose -Message ('Mismatch desired state & current state. Return "False"') -LogLevel Minimal
                 return $false
             }
             Default {
@@ -206,7 +223,7 @@ function Test-TargetResource {
     else {
         switch ($ProgramInfo.Ensure) {
             'Absent' {
-                Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
+                Write-MyVerbose -Message ('Mismatch desired state & current state. Return "False"') -LogLevel Minimal
                 return $false
             }
             'Present' {
@@ -221,8 +238,8 @@ function Test-TargetResource {
                             try {
                                 $Range = [pspm.SemVerRange]::new($Version)
                                 if (-not $Range.IsSatisfied($SemVer)) {
-                                    Write-Verbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
-                                    Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
+                                    Write-MyVerbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version) -LogLevel Moderate
+                                    Write-MyVerbose -Message ('Mismatch desired state & current state. Return "False"') -LogLevel Minimal
                                     return $false
                                 }
                             }
@@ -233,14 +250,14 @@ function Test-TargetResource {
                     }
                     else {
                         if ($Version -ne $ProgramInfo.Version) {
-                            Write-Verbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version)
-                            Write-Verbose -Message ('Mismatch desired state & current state. Return "False"')
+                            Write-MyVerbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version) -LogLevel Moderate
+                            Write-MyVerbose -Message ('Mismatch desired state & current state. Return "False"') -LogLevel Minimal
                             return $false
                         }
                     }
                 }
 
-                Write-Verbose -Message ('Match desired state & current state. Return "True"')
+                Write-MyVerbose -Message ('Match desired state & current state. Return "True"') -LogLevel Minimal
                 return $true
             }
             Default {
@@ -336,8 +353,13 @@ function Set-TargetResource {
         $PreCopyFrom,
 
         [string]
-        $PreCopyTo
+        $PreCopyTo,
+
+        [LogLevel]
+        $LogLevel = [LogLevel]::All
     )
+
+    $global:GlobalLogLevel = $LogLevel
 
     if (($Ensure -eq 'Absent') -and (!$UseUninstallString) -and (!$InstallerPath)) {
         Write-Error -Message ("InstallerPath is not specified. Skip Set-Configuration.")
@@ -356,7 +378,7 @@ function Set-TargetResource {
         Write-Warning -Message ('PreCopyFrom parameter is specified, but PreCopyTo is empty. You should specify both PreCopyFrom and PreCopyTo.')
     }
     elseif ($PreCopyFrom -and $PreCopyTo) {
-        Write-Verbose -Message ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom, $PreCopyTo)
+        Write-MyVerbose -Message ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom, $PreCopyTo) -LogLevel All
         Get-RemoteFile -Path $PreCopyFrom -DestinationFolder $PreCopyTo -Credential $Credential -TimeoutSec $DownloadTimeout -Force -ErrorAction Stop >$null
     }
 
@@ -378,7 +400,7 @@ function Set-TargetResource {
 
     try {
         if ($Ensure -eq 'Absent') {
-            Write-Verbose -Message ('Ensure = "Absent". Try to uninstall an application.')
+            Write-MyVerbose -Message ('Ensure = "Absent". Try to uninstall an application.') -LogLevel Minimal
             $strInOrUnin = 'Uninstall'
             $msiOpt = 'x'
             $Arguments = $ArgumentsForUninstall
@@ -397,7 +419,7 @@ function Set-TargetResource {
                     throw ("Couldn't get UninstallString.")
                 }
 
-                Write-Verbose -Message ('Use UninstallString for uninstall. ("{0}")' -f $ProgramInfo.UninstallString)
+                Write-MyVerbose -Message ('Use UninstallString for uninstall. ("{0}")' -f $ProgramInfo.UninstallString) -LogLevel Moderate
                 $UseWebFile = $false
                 if ($ProgramInfo.UninstallString -match '^(?<path>.+\.[a-z]{3})(?<args>.*)') {
                     $Installer = $Matches.path
@@ -409,7 +431,7 @@ function Set-TargetResource {
             }
         }
         else {
-            Write-Verbose -Message ('Ensure = "Present". Try to install an application.')
+            Write-MyVerbose -Message ('Ensure = "Present". Try to install an application.') -LogLevel Minimal
             $strInOrUnin = 'Install'
             $msiOpt = 'i'
         }
@@ -417,14 +439,14 @@ function Set-TargetResource {
         if (($Ensure -eq 'Absent') -and $UseUninstallString) {
         }
         else {
-            Write-Verbose -Message ('Use Installer ("{0}") for {1}. (if the path of an installer as http/https/ftp. will download it)' -f $InstallerPath, $strInOrUnin)
+            Write-MyVerbose -Message ('Use Installer ("{0}") for {1}. (if the path of an installer as http/https/ftp. will download it)' -f $InstallerPath, $strInOrUnin) -LogLevel All
             if ($InstallerPath -match '^msiexec[.exe]?') {
                 #[SpecialTreat]If specified 'msiexec.exe', replace 'C:\Windows\System32\msiexec.exe'
                 $InstallerPath = (Join-Path -Path $env:windir -ChildPath '\system32\msiexec.exe')
             }
             $private:tmpPath = [System.Uri]$InstallerPath
             if ($tmpPath.IsLoopback -or $tmpPath.IsUnc) {
-                Write-Verbose -Message ('"{0}" is local file or remote unc file.' -f $tmpPath.LocalPath)
+                Write-MyVerbose -Message ('"{0}" is local file or remote unc file.' -f $tmpPath.LocalPath) -LogLevel All
                 $UseWebFile = $false
                 if ($PSBoundParameters.Credential) {
                     New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tmpPath.LocalPath) -Credential $Credential -ErrorAction Stop > $null
@@ -442,7 +464,7 @@ function Set-TargetResource {
                     throw ("File '{0}' does not match expected hash value" -f $Installer)
                 }
                 else {
-                    Write-Verbose -Message ("Hash check passed")
+                    Write-MyVerbose -Message ("Hash check passed") -LogLevel Moderate
                 }
             }
         }
@@ -464,26 +486,26 @@ function Set-TargetResource {
         }
         if ($WorkingDirectory) {
             $CommandParam.WorkingDirectory = $WorkingDirectory
-            Write-Verbose -Message ("{2} start. Installer:'{0}', Args:'{1}', WorkDir:'{3}'" -f $Installer, $Arg, $strInOrUnin, $WorkingDirectory)
+            Write-MyVerbose -Message ("{2} start. Installer:'{0}', Args:'{1}', WorkDir:'{3}'" -f $Installer, $Arg, $strInOrUnin, $WorkingDirectory) -LogLevel All
         }
         else {
-            Write-Verbose -Message ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin)
+            Write-MyVerbose -Message ("{2} start. Installer:'{0}', Args:'{1}'" -f $Installer, $Arg, $strInOrUnin) -LogLevel All
         }
         $ExitCode = Start-Command @CommandParam -ErrorAction Stop
-        Write-Verbose -Message ("{1} end. ExitCode: '{0}'" -f $ExitCode, $strInOrUnin)
+        Write-MyVerbose -Message ("{1} end. ExitCode: '{0}'" -f $ExitCode, $strInOrUnin) -LogLevel Moderate
 
         if (-not ($ReturnCode -contains $ExitCode)) {
             throw ("The exit code {0} was not expected. Configuration is likely not correct" -f $ExitCode)
         }
         else {
-            Write-Verbose -Message ('{0} process exited successfully' -f $strInOrUnin)
+            Write-MyVerbose -Message ('{0} process exited successfully' -f $strInOrUnin) -LogLevel Minimal
         }
 
         if (-not $NoRestart) {
             $private:serverFeatureData = Invoke-CimMethod -Name 'GetServerFeature' -Namespace 'root\microsoft\windows\servermanager' -Class 'MSFT_ServerManagerTasks' -Arguments @{ BatchSize = 256 } -ErrorAction 'Ignore' -Verbose:$false
             $private:registryData = Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction 'Ignore'
             if (($serverFeatureData -and $serverFeatureData.RequiresReboot) -or $registryData -or ($exitcode -eq 3010) -or ($exitcode -eq 1641)) {
-                Write-Verbose -Message "The machine requires a reboot"
+                Write-MyVerbose -Message "The machine requires a reboot" -LogLevel Minimal
                 $global:DSCMachineStatus = 1
             }
         }
@@ -493,11 +515,11 @@ function Set-TargetResource {
     }
     finally {
         if ($PreCopyTo -and (Test-Path $PreCopyTo -ErrorAction SilentlyContinue)) {
-            Write-Verbose -Message ("Remove PreCopied file(s)")
+            Write-MyVerbose -Message ("Remove PreCopied file(s)") -LogLevel Moderate
             Remove-Item -LiteralPath $PreCopyTo -Force -Recurse > $null
         }
         if ($UseWebFile -and $DownloadedFile -and (Test-Path $DownloadedFile -PathType Leaf -ErrorAction SilentlyContinue)) {
-            Write-Verbose -Message ("Remove temp files")
+            Write-MyVerbose -Message ("Remove temp files") -LogLevel Moderate
             Remove-Item -LiteralPath $DownloadedFile -Force -Recurse > $null
         }
         if (Get-PSDrive | Where-Object -FilterScript { $_.Name -eq $tmpDriveName }) {
@@ -542,7 +564,7 @@ function Get-RemoteFile {
     )
     begin {
         if (-not (Test-Path $DestinationFolder -PathType Container)) {
-            Write-Verbose -Message ('DestinationFolder "{0}" is not exist. Will create it.' -f $DestinationFolder)
+            Write-MyVerbose -Message ('DestinationFolder "{0}" is not exist. Will create it.' -f $DestinationFolder) -LogLevel All
             New-Item -Path $DestinationFolder -ItemType Directory -Force -ErrorAction Stop > $null
         }
     }
@@ -562,10 +584,10 @@ function Get-RemoteFile {
                 # Depending on the location of the installer processing branch (local or shared folder or Web)
                 if ($tempPath.IsLoopback -and (!$tempPath.IsUnc)) {
                     # Local file
-                    Write-Verbose -Message ('"{0}" is local file.' -f $tempPath.LocalPath)
+                    Write-MyVerbose -Message ('"{0}" is local file.' -f $tempPath.LocalPath) -LogLevel All
                     $valid = $true
                     $OutFile = $tempPath.LocalPath
-                    Write-Verbose -Message ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder)
+                    Write-MyVerbose -Message ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder) -LogLevel All
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse -PassThru:$PassThru
                 }
                 elseif ($tempPath.IsUnc) {
@@ -594,7 +616,7 @@ function Get-RemoteFile {
                         }
                     }
 
-                    Write-Verbose -Message ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder)
+                    Write-MyVerbose -Message ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder) -LogLevel All
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse
                 }
                 elseif ($tempPath.Scheme -match 'http|https|ftp') {
@@ -618,7 +640,7 @@ function Get-RemoteFile {
                         }
                     }
 
-                    Write-Verbose -Message ("Download file from '{0}' to '{1}'" -f $tempPath.AbsoluteUri, $OutFile)
+                    Write-MyVerbose -Message ("Download file from '{0}' to '{1}'" -f $tempPath.AbsoluteUri, $OutFile) -LogLevel All
                     #Suppress Progress bar for faster download
                     $private:origProgress = $ProgressPreference
                     $ProgressPreference = 'SilentlyContinue'
@@ -676,11 +698,11 @@ function Assert-FileHash {
     Process {
         $private:hash = Get-FileHash -Path $Path -Algorithm $Algorithm | Select-Object -Property Hash
         if ($FileHash -eq $hash.Hash) {
-            Write-Verbose -Message ('Match file hash of "{1}". ({0})' -f $hash.Hash, $Path)
+            Write-MyVerbose -Message ('Match file hash of "{1}". ({0})' -f $hash.Hash, $Path) -LogLevel All
             return $true
         }
         else {
-            Write-Verbose -Message ('Not match file hash of "{1}". ({0})' -f $hash.Hash, $Path)
+            Write-MyVerbose -Message ('Not match file hash of "{1}". ({0})' -f $hash.Hash, $Path) -LogLevel All
             return $false
         }
     }
@@ -787,12 +809,12 @@ function Invoke-ScriptBlock {
 
     try {
         $scriptBlock = [ScriptBlock]::Create($ScriptBlockString).GetNewClosure()
-        Write-Verbose -Message ('Execute ScriptBlock')
+        Write-MyVerbose -Message ('Execute ScriptBlock') -LogLevel Moderate
         if (@($Arguments).Count -ge 1) {
-            $scriptBlock.Invoke($Arguments) | Out-String -Stream | Write-Verbose
+            $scriptBlock.Invoke($Arguments) | Out-String -Stream | Write-MyVerbose -LogLevel All
         }
         else {
-            $scriptBlock.Invoke() | Out-String -Stream | Write-Verbose
+            $scriptBlock.Invoke() | Out-String -Stream | Write-MyVerbose -LogLevel All
         }
     }
     catch {
@@ -925,7 +947,7 @@ function Get-ProxySetting {
     }
 
     if ($Proxy) {
-        Write-Verbose -Message 'Find proxy setting in environment variable "http_proxy"'
+        Write-MyVerbose -Message 'Find proxy setting in environment variable "http_proxy"' -LogLevel All
         return $Proxy
     }
 
@@ -937,7 +959,7 @@ function Get-ProxySetting {
     }
 
     if ($Proxy) {
-        Write-Verbose -Message 'Find proxy setting in the preferences of the Internet Explorer'
+        Write-MyVerbose -Message 'Find proxy setting in the preferences of the Internet Explorer' -LogLevel All
         return $Proxy
     }
 
@@ -994,8 +1016,40 @@ public class WinHttp
     }
 
     if ($Proxy) {
-        Write-Verbose -Message 'Find proxy setting in the winhttp'
+        Write-MyVerbose -Message 'Find proxy setting in the winhttp' -LogLevel All
         return $Proxy
+    }
+}
+
+function Write-MyVerbose {
+    [CmdletBinding()]
+    param (
+        [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+        [Alias('Msg')]
+        [AllowEmptyString()]
+        [string]$Message,
+
+        [Parameter()]
+        [LogLevel]$LogLevel = [LogLevel]::All
+    )
+
+    begin {
+        $WriteVerboseParams = [System.Collections.Generic.Dictionary[[String], [Object]]]::new($PSBoundParameters)
+        $null = $WriteVerboseParams.Remove('LogLevel')
+        $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Write-Verbose', [System.Management.Automation.CommandTypes]::Cmdlet)
+        $scriptCmd = { & $wrappedCmd @WriteVerboseParams }
+        $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
+        $steppablePipeline.Begin($PSCmdlet)
+    }
+
+    process {
+        if (($null -eq $global:GlobalLogLevel) -or ($LogLevel -le $global:GlobalLogLevel)) {
+            $steppablePipeline.Process($_)
+        }
+    }
+
+    end {
+        $steppablePipeline.End()
     }
 }
 

@@ -28,4 +28,5 @@ class cApplication : OMI_BaseResource
   [write] string PostAction;
   [write] string PreCopyFrom;
   [write] string PreCopyTo;
+  [write,ValueMap{"None","Minimal","Moderate","All"},Values{"None","Minimal","Moderate","All"}] string LogLevel;
 };

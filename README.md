@@ -112,6 +112,10 @@ You can use this resource simply or flexibly. Please see the "Examples" section 
 + **[string] PreCopyTo** (Write):
     + The path of the directory which the file specified by `PreCopyFrom` is saved.
 
++ **[string] LogLevel** (Write):
+    + Specifies the level of logging output to the Verbose stream.
+    + The default value is `All` { None | Minimal | Moderate | All }
+
 ----
 ## Examples
 + **Example 1**: Install Visual Studio Code [Simple scenario]
@@ -183,6 +187,9 @@ Configuration Example4
 
 ---
 ## ChangeLog
+### 4.1.0
+ + Add `LogLevel` property.
+
 ### 4.0.2
  + `TimeoutSec` property is changed to `DownloadTimeout`.
  + Add `ProcessTimeout` property.
