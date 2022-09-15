@@ -201,6 +201,7 @@ function Test-TargetResource {
         ProductId              = $ProductId
         InstalledCheckFilePath = $InstalledCheckFilePath
         Fuzzy                  = $Fuzzy
+        LogLevel               = $LogLevel
     }
 
     $ProgramInfo = Get-TargetResource @GetParam -ErrorAction Stop
@@ -1034,22 +1035,33 @@ function Write-MyVerbose {
     )
 
     begin {
-        $WriteVerboseParams = [System.Collections.Generic.Dictionary[[String], [Object]]]::new($PSBoundParameters)
-        $null = $WriteVerboseParams.Remove('LogLevel')
-        $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Write-Verbose', [System.Management.Automation.CommandTypes]::Cmdlet)
-        $scriptCmd = { & $wrappedCmd @WriteVerboseParams }
-        $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
-        $steppablePipeline.Begin($PSCmdlet)
+        if (($null -eq $global:GlobalLogLevel) -or ($LogLevel -le $global:GlobalLogLevel)) {
+            $ShouldInvoke = $true
+        }
+        else {
+            $ShouldInvoke = $false
+        }
+
+        if ($ShouldInvoke) {
+            $WriteVerboseParams = [System.Collections.Generic.Dictionary[[String], [Object]]]::new($PSBoundParameters)
+            $null = $WriteVerboseParams.Remove('LogLevel')
+            $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Write-Verbose', [System.Management.Automation.CommandTypes]::Cmdlet)
+            $scriptCmd = { & $wrappedCmd @WriteVerboseParams }
+            $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
+            $steppablePipeline.Begin($PSCmdlet)
+        }
     }
 
     process {
-        if (($null -eq $global:GlobalLogLevel) -or ($LogLevel -le $global:GlobalLogLevel)) {
+        if ($ShouldInvoke) {
             $steppablePipeline.Process($_)
         }
     }
 
     end {
-        $steppablePipeline.End()
+        if ($ShouldInvoke) {
+            $steppablePipeline.End()
+        }
     }
 }
 
