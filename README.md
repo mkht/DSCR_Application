@@ -187,6 +187,9 @@ Configuration Example4
 
 ---
 ## ChangeLog
+### 4.1.2
+ + Security update.
+
 ### 4.1.1
  + Improve log messages.
 
