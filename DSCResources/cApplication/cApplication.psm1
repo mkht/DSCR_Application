@@ -653,7 +653,7 @@ function Get-RemoteFile {
                     #Suppress Progress bar for faster download
                     $private:origProgress = $ProgressPreference
                     $ProgressPreference = 'SilentlyContinue'
-                    Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -Proxy $Proxy.Address -TimeoutSec $TimeoutSec -ErrorAction stop
+                    Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -Proxy $Proxy.Address -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction stop
                     $ProgressPreference = $private:origProgress
                 }
                 else {
