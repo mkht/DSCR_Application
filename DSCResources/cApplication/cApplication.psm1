@@ -1,5 +1,4 @@
-
-Enum Ensure{
+﻿Enum Ensure{
     Absent
     Present
 }
@@ -17,7 +16,7 @@ function Get-TargetResource {
     Param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateSet("Present", "Absent")]
+        [ValidateSet('Present', 'Absent')]
         [string]
         $Ensure = 'Present',
 
@@ -50,17 +49,17 @@ function Get-TargetResource {
     if ($InstalledCheckFilePath) {
         Write-MyVerbose -Message ('InstalledCheckFilePath is specified. Whether an application exists or not is judged by whether or not the path exists.') -LogLevel Minimal
         if (Test-Path -Path $InstalledCheckFilePath) {
-            Write-MyVerbose -Message ('"{0}" is exist.' -f $InstalledCheckFilePath) -LogLevel Moderate
+            Write-MyVerbose -Message ('"{0}" exists.' -f $InstalledCheckFilePath) -LogLevel Moderate
             $Program = @{
                 DisplayName = $Name
             }
         }
         else {
-            Write-MyVerbose -Message ('"{0}" is not exist.' -f $InstalledCheckFilePath) -LogLevel Moderate
+            Write-MyVerbose -Message ('"{0}" does not exist.' -f $InstalledCheckFilePath) -LogLevel Moderate
             $Program = $null
         }
     }
-    # $ProductId take priority over $Name
+    # $ProductId takes priority over $Name
     elseif ($ProductId) {
         $Program = Get-InstalledProgram -ProductId $ProductId
     }
@@ -101,7 +100,7 @@ function Test-TargetResource {
     Param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateSet("Present", "Absent")]
+        [ValidateSet('Present', 'Absent')]
         [string]
         $Ensure = 'Present',
 
@@ -190,7 +189,7 @@ function Test-TargetResource {
     $global:GlobalLogLevel = $LogLevel
 
     if ($InstalledCheckScript) {
-        Write-MyVerbose -Message ('InstalledCheckScript is specified. Whether an application exists or not is judged by script invocation') -LogLevel Minimal
+        Write-MyVerbose -Message ('InstalledCheckScript is specified. Whether an application exists or not is judged by script invocation.') -LogLevel Minimal
         $local:scriptBlock = [ScriptBlock]::Create($InstalledCheckScript)
         $ScriptResult = [bool]($local:scriptBlock.Invoke())
         if ($ScriptResult) {
@@ -247,8 +246,8 @@ function Test-TargetResource {
                             try {
                                 $Range = [pspm.SemVerRange]::new($Version)
                                 if (-not $Range.IsSatisfied($SemVer)) {
-                                    Write-MyVerbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version) -LogLevel Moderate
-                                    Write-MyVerbose -Message ('Mismatch desired state & current state. Return "False"') -LogLevel Minimal
+                                    Write-MyVerbose -Message ('The application "{0}" is installed but does not match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version) -LogLevel Moderate
+                                    Write-MyVerbose -Message ('Mismatch desired state and current state. Return "False".') -LogLevel Minimal
                                     return $false
                                 }
                             }
@@ -259,8 +258,8 @@ function Test-TargetResource {
                     }
                     else {
                         if ($Version -ne $ProgramInfo.Version) {
-                            Write-MyVerbose -Message ('The application "{0}" is installed. but NOT match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version) -LogLevel Moderate
-                            Write-MyVerbose -Message ('Mismatch desired state & current state. Return "False"') -LogLevel Minimal
+                            Write-MyVerbose -Message ('The application "{0}" is installed but does not match your desired version. (Desired version: "{1}", Installed version: "{2}")' -f $Name, $Version, $ProgramInfo.Version) -LogLevel Moderate
+                            Write-MyVerbose -Message ('Mismatch desired state and current state. Return "False".') -LogLevel Minimal
                             return $false
                         }
                     }
@@ -282,7 +281,7 @@ function Set-TargetResource {
     Param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateSet("Present", "Absent")]
+        [ValidateSet('Present', 'Absent')]
         [string]
         $Ensure = 'Present',
 
@@ -371,11 +370,11 @@ function Set-TargetResource {
     $global:GlobalLogLevel = $LogLevel
 
     if (($Ensure -eq 'Absent') -and (!$UseUninstallString) -and (!$InstallerPath)) {
-        Write-Error -Message ("InstallerPath is not specified. Skip Set-Configuration.")
+        Write-Error -Message ('InstallerPath is not specified. Skip Set-Configuration.')
         return
     }
     elseif (($Ensure -eq 'Present') -and (!$InstallerPath)) {
-        Write-Error -Message ("InstallerPath is not specified. Skip Set-Configuration.")
+        Write-Error -Message ('InstallerPath is not specified. Skip Set-Configuration.')
         return
     }
 
@@ -387,7 +386,7 @@ function Set-TargetResource {
         Write-Warning -Message ('PreCopyFrom parameter is specified, but PreCopyTo is empty. You should specify both PreCopyFrom and PreCopyTo.')
     }
     elseif ($PreCopyFrom -and $PreCopyTo) {
-        Write-MyVerbose -Message ('PreCopy From:"{0}" To:"{1}"' -f $PreCopyFrom, $PreCopyTo) -LogLevel All
+        Write-MyVerbose -Message ('PreCopy from "{0}" to "{1}".' -f $PreCopyFrom, $PreCopyTo) -LogLevel All
         Get-RemoteFile -Path $PreCopyFrom -DestinationFolder $PreCopyTo -Credential $Credential -TimeoutSec $DownloadTimeout -Force -ErrorAction Stop >$null
     }
 
@@ -448,14 +447,14 @@ function Set-TargetResource {
         if (($Ensure -eq 'Absent') -and $UseUninstallString) {
         }
         else {
-            Write-MyVerbose -Message ('Use Installer ("{0}") for {1}. (if the path of an installer as http/https/ftp. will download it)' -f $InstallerPath, $strInOrUnin) -LogLevel All
+            Write-MyVerbose -Message ('Use installer ("{0}") for {1}. (If the path of an installer is http/https/ftp, it will download it.)' -f $InstallerPath, $strInOrUnin) -LogLevel All
             if ($InstallerPath -match '^msiexec[.exe]?') {
-                #[SpecialTreat]If specified 'msiexec.exe', replace 'C:\Windows\System32\msiexec.exe'
+                #[SpecialTreat]If 'msiexec.exe' is specified, replace with 'C:\Windows\System32\msiexec.exe'
                 $InstallerPath = (Join-Path -Path $env:windir -ChildPath '\system32\msiexec.exe')
             }
             $private:tmpPath = [System.Uri]$InstallerPath
             if ($tmpPath.IsLoopback -or $tmpPath.IsUnc) {
-                Write-MyVerbose -Message ('"{0}" is local file or remote unc file.' -f $tmpPath.LocalPath) -LogLevel All
+                Write-MyVerbose -Message ('"{0}" is a local file or remote UNC file.' -f $tmpPath.LocalPath) -LogLevel All
                 $UseWebFile = $false
                 if ($PSBoundParameters.Credential) {
                     New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tmpPath.LocalPath) -Credential $Credential -ErrorAction Stop > $null
@@ -470,10 +469,10 @@ function Set-TargetResource {
 
             if ($FileHash) {
                 if (-not (Assert-FileHash -Path $Installer -FileHash $FileHash -Algorithm $HashAlgorithm)) {
-                    throw ("File '{0}' does not match expected hash value" -f $Installer)
+                    throw ("File '{0}' does not match expected hash value." -f $Installer)
                 }
                 else {
-                    Write-MyVerbose -Message ("Hash check passed") -LogLevel Moderate
+                    Write-MyVerbose -Message ('Hash check passed.') -LogLevel Moderate
                 }
             }
         }
@@ -504,17 +503,17 @@ function Set-TargetResource {
         Write-MyVerbose -Message ("{1} end. ExitCode: '{0}'" -f $ExitCode, $strInOrUnin) -LogLevel Moderate
 
         if (-not ($ReturnCode -contains $ExitCode)) {
-            throw ("The exit code {0} was not expected. Configuration is likely not correct" -f $ExitCode)
+            throw ('The exit code {0} was not expected. Configuration is likely not correct.' -f $ExitCode)
         }
         else {
-            Write-MyVerbose -Message ('{0} process exited successfully' -f $strInOrUnin) -LogLevel Minimal
+            Write-MyVerbose -Message ('{0} process exited successfully.' -f $strInOrUnin) -LogLevel Minimal
         }
 
         if (-not $NoRestart) {
             $private:serverFeatureData = Invoke-CimMethod -Name 'GetServerFeature' -Namespace 'root\microsoft\windows\servermanager' -Class 'MSFT_ServerManagerTasks' -Arguments @{ BatchSize = 256 } -ErrorAction 'Ignore' -Verbose:$false
             $private:registryData = Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations' -ErrorAction 'Ignore'
             if (($serverFeatureData -and $serverFeatureData.RequiresReboot) -or $registryData -or ($exitcode -eq 3010) -or ($exitcode -eq 1641)) {
-                Write-MyVerbose -Message "The machine requires a reboot" -LogLevel Minimal
+                Write-MyVerbose -Message 'The machine requires a reboot.' -LogLevel Minimal
                 $global:DSCMachineStatus = 1
             }
         }
@@ -524,11 +523,11 @@ function Set-TargetResource {
     }
     finally {
         if ($PreCopyTo -and (Test-Path $PreCopyTo -ErrorAction SilentlyContinue)) {
-            Write-MyVerbose -Message ("Remove PreCopied file(s)") -LogLevel Moderate
+            Write-MyVerbose -Message ('Remove PreCopied file(s)') -LogLevel Moderate
             Remove-Item -LiteralPath $PreCopyTo -Force -Recurse > $null
         }
         if ($UseWebFile -and $DownloadedFile -and (Test-Path $DownloadedFile -PathType Leaf -ErrorAction SilentlyContinue)) {
-            Write-MyVerbose -Message ("Remove temp files") -LogLevel Moderate
+            Write-MyVerbose -Message ('Remove temp files.') -LogLevel Moderate
             Remove-Item -LiteralPath $DownloadedFile -Force -Recurse > $null
         }
         if (Get-PSDrive | Where-Object -FilterScript { $_.Name -eq $tmpDriveName }) {
@@ -551,8 +550,8 @@ function Get-RemoteFile {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true, Position = 0)]
-        [Alias("Uri")]
-        [Alias("SourcePath")]
+        [Alias('Uri')]
+        [Alias('SourcePath')]
         [System.Uri[]] $Path,
 
         [Parameter(Mandatory = $true, Position = 1)]
@@ -573,7 +572,7 @@ function Get-RemoteFile {
     )
     begin {
         if (-not (Test-Path $DestinationFolder -PathType Container)) {
-            Write-MyVerbose -Message ('DestinationFolder "{0}" is not exist. Will create it.' -f $DestinationFolder) -LogLevel All
+            Write-MyVerbose -Message ('DestinationFolder "{0}" does not exist. Will create it.' -f $DestinationFolder) -LogLevel All
             New-Item -Path $DestinationFolder -ItemType Directory -Force -ErrorAction Stop > $null
         }
     }
@@ -587,25 +586,25 @@ function Get-RemoteFile {
 
                 if ($null -eq $tempPath.IsLoopback) {
                     $valid = $false
-                    throw ("{0} is not valid uri." -f $tempPath)
+                    throw ('{0} is not a valid URI.' -f $tempPath)
                 }
 
-                # Depending on the location of the installer processing branch (local or shared folder or Web)
+                # Depending on the location of the installer processing branch (local or shared folder or web)
                 if ($tempPath.IsLoopback -and (!$tempPath.IsUnc)) {
                     # Local file
-                    Write-MyVerbose -Message ('"{0}" is local file.' -f $tempPath.LocalPath) -LogLevel All
+                    Write-MyVerbose -Message ('"{0}" is a local file.' -f $tempPath.LocalPath) -LogLevel All
                     $valid = $true
                     $OutFile = $tempPath.LocalPath
-                    Write-MyVerbose -Message ("Copy file from '{0}' to '{1}'" -f $tempPath.LocalPath, $DestinationFolder) -LogLevel All
+                    Write-MyVerbose -Message ("Copy file from '{0}' to '{1}'." -f $tempPath.LocalPath, $DestinationFolder) -LogLevel All
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse -PassThru:$PassThru
                 }
                 elseif ($tempPath.IsUnc) {
                     # Shared folder
-                    # When using credentials it is necessary to map the drive first
+                    # When using credentials, it is necessary to map the drive first
                     if ($PSBoundParameters.Credential) {
                         New-PSDrive -Name $tmpDriveName -PSProvider FileSystem -Root (Split-Path $tempPath.LocalPath) -Credential $Credential -ErrorAction Stop > $null
                     }
-                    # Copy to Local
+                    # Copy to local
                     $OutFile = Join-Path -Path $DestinationFolder -ChildPath ([System.IO.Path]::GetFileName($tempPath.LocalPath))
                     if (Test-Path -LiteralPath $OutFile -PathType Leaf) {
                         if ($tempPath.LocalPath -eq $OutFile) {
@@ -621,7 +620,7 @@ function Get-RemoteFile {
                         }
                         else {
                             $valid = $false
-                            throw ("'{0}' is exist. If you want to replace existing file, Use 'Force' switch." -f $OutFile)
+                            throw ("'{0}' exists. If you want to replace the existing file, use the 'Force' switch." -f $OutFile)
                         }
                     }
 
@@ -629,28 +628,36 @@ function Get-RemoteFile {
                     Copy-Item -Path $tempPath.LocalPath -Destination $DestinationFolder -ErrorAction Stop -Force:$Force -Recurse
                 }
                 elseif ($tempPath.Scheme -match 'http|https|ftp') {
-                    # Download from Web
+                    # Download from web
                     Enable-TLS12
                     $Proxy = Get-ProxySetting -TargetUrl $tempPath.AbsoluteUri -ErrorAction Ignore
-                    if ($redUri = Get-RedirectedUrl -URL $tempPath.AbsoluteUri -Proxy $Proxy -ErrorAction Ignore) {
-                        # When it is not a file direct link, obtain the file name of the redirect destination(issue #1)
-                        $OutFile = Join-Path -Path $DestinationFolder -ChildPath ([System.IO.Path]::GetFileName($redUri.LocalPath))
+
+                    # When it is not a direct file link, obtain the file name of the redirect destination (issue #1)
+                    $OutFileName = [System.IO.Path]::GetFileName($tempPath.LocalPath)
+                    if (-not [System.IO.Path]::GetExtension($OutFileName)) {
+                        $RealFileName = Get-RedirectedFilename -URL $tempPath.AbsoluteUri -Proxy $Proxy -ErrorAction Ignore
+                        if ([System.IO.Path]::GetExtension($RealFileName)) {
+                            $OutFileName = $RealFileName
+                        }
                     }
-                    else {
-                        $OutFile = Join-Path -Path $DestinationFolder -ChildPath ([System.IO.Path]::GetFileName($tempPath.LocalPath))
+
+                    if ($OutFileName -eq '') {
+                        $OutFileName = [System.IO.Path]::GetRandomFileName()
                     }
+
+                    $OutFile = Join-Path -Path $DestinationFolder -ChildPath $OutFileName
                     if (Test-Path -LiteralPath $OutFile -PathType Leaf) {
                         if ($Force) {
                             Write-Warning -Message ('"{0}" will be overwritten.' -f $OutFile)
                         }
                         else {
                             $valid = $false
-                            throw ("'{0}' is exist. If you want to replace existing file, Use 'Force' switch." -f $OutFile)
+                            throw ("'{0}' exists. If you want to replace the existing file, use the 'Force' switch." -f $OutFile)
                         }
                     }
 
-                    Write-MyVerbose -Message ("Download file from '{0}' to '{1}'" -f $tempPath.AbsoluteUri, $OutFile) -LogLevel All
-                    #Suppress Progress bar for faster download
+                    Write-MyVerbose -Message ("Download file from '{0}' to '{1}'." -f $tempPath.AbsoluteUri, $OutFile) -LogLevel All
+                    #Suppress progress bar for faster download
                     $private:origProgress = $ProgressPreference
                     $ProgressPreference = 'SilentlyContinue'
                     Invoke-WebRequest -Uri $tempPath.AbsoluteUri -OutFile $OutFile -Credential $Credential -Proxy $Proxy.Address -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction stop
@@ -658,7 +665,7 @@ function Get-RemoteFile {
                 }
                 else {
                     $valid = $false
-                    throw ("{0} is not valid uri." -f $tempPath)
+                    throw ('{0} is not a valid URI.' -f $tempPath)
                 }
 
                 if ($valid -and $OutFile -and $PassThru) {
@@ -738,13 +745,13 @@ function Get-InstalledProgram {
     $local:Program = $null
     switch ($Wow64) {
         $true {
-            $UninstallRegMachine = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-            $UninstallRegUser = "HKCU:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+            $UninstallRegMachine = 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
+            $UninstallRegUser = 'HKCU:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
         }
 
         $false {
-            $UninstallRegMachine = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
-            $UninstallRegUser = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+            $UninstallRegMachine = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+            $UninstallRegUser = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
         }
     }
 
@@ -774,7 +781,7 @@ function Get-InstalledProgram {
     if ($Program) {
         $Program
     }
-    elseif ((!$Wow64) -and $FallbackToWow64 -and (Test-Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall")) {
+    elseif ((!$Wow64) -and $FallbackToWow64 -and (Test-Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall')) {
         Get-InstalledProgram @PSBoundParameters -Wow64
     }
 }
@@ -792,11 +799,11 @@ function Format-ProductId {
     )
 
     try {
-        $private:identifyingNumber = "{{{0}}}" -f [Guid]::Parse($ProductId).ToString().ToUpper()
+        $private:identifyingNumber = '{{{0}}}' -f [Guid]::Parse($ProductId).ToString().ToUpper()
         return $identifyingNumber
     }
     catch {
-        Write-Error -Message ("The specified ProductId ({0}) is not a valid Guid" -f $ProductId)
+        Write-Error -Message ('The specified ProductId ({0}) is not a valid GUID.' -f $ProductId)
     }
 }
 
@@ -832,9 +839,9 @@ function Invoke-ScriptBlock {
 }
 
 
-function Get-RedirectedUrl {
+function Get-RedirectedFilename {
     [CmdletBinding()]
-    [OutputType([System.Uri])]
+    [OutputType([string])]
     Param (
         [Parameter(Mandatory, Position = 0)]
         [string]$URL,
@@ -844,20 +851,42 @@ function Get-RedirectedUrl {
         [System.Net.IWebProxy]$Proxy
     )
 
+    $fileName = ''
+
     try {
         $request = [System.Net.WebRequest]::Create($URL)
         if ($null -ne $Proxy) {
             $request.Proxy = $Proxy
         }
-        $request.AllowAutoRedirect = $false
+        $request.AllowAutoRedirect = $true
+        $request.Method = 'HEAD'
         $response = $request.GetResponse()
 
-        if ($response.StatusCode -eq "Found") {
-            [System.Uri]$response.GetResponseHeader("Location")
+        if ($cd = $response.GetResponseHeader('Content-Disposition')) {
+            try {
+                $contentDisposition = [System.Net.Http.Headers.ContentDispositionHeaderValue]::Parse($cd)
+            }
+            catch {}
+            if ($contentDisposition.FileNameStar) {
+                $fileName = [System.IO.Path]::GetFileName($contentDisposition.FileNameStar)
+            }
+            elseif ($contentDisposition.FileName) {
+                $fileName = [System.IO.Path]::GetFileName($contentDisposition.FileName)
+            }
         }
+        else {
+            $fileName = [System.IO.Path]::GetFileName($response.ResponseUri.LocalPath)
+        }
+
+        $fileName.Trim()
     }
     catch {
         Write-Error -Exception $_.Exception
+    }
+    finally {
+        if ($response) {
+            $response.Close()
+        }
     }
 }
 
@@ -883,7 +912,7 @@ function Start-Command {
     $ProcessInfo.Arguments = [string]$ArgumentList
     if ($PSBoundParameters.ContainsKey('WorkingDirectory')) {
         if (-not (Test-Path -LiteralPath $WorkingDirectory -PathType Container)) {
-            Write-Warning -Message ('Specified working directory path is not exist.')
+            Write-Warning -Message ('Specified working directory path does not exist.')
         }
         else {
             $ProcessInfo.WorkingDirectory = $WorkingDirectory
@@ -905,7 +934,7 @@ function Start-Command {
 
 
 function Enable-TLS12 {
-    # Enable TLS1.2 in the current session (only if it has not enabled)
+    # Enable TLS1.2 in the current session (only if it has not been enabled)
     try {
         if (([Net.ServicePointManager]::SecurityProtocol -ne [Net.SecurityProtocolType]::SystemDefault) -and (-not ([Net.ServicePointManager]::SecurityProtocol -band [Net.SecurityProtocolType]::Tls12))) {
             [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
@@ -948,7 +977,7 @@ function Get-ProxySetting {
             $Proxy = [System.Net.WebProxy]::new($env:http_proxy)
         }
         catch [System.UriFormatException] {
-            Write-Error -Message ('Invalid proxy setting detected. The environment variable "http_proxy" is {0}' -f $env:http_proxy)
+            Write-Error -Message ('Invalid proxy setting detected. The environment variable "http_proxy" is {0}.' -f $env:http_proxy)
         }
         catch {
             Write-Error -Exception $_.Exception
@@ -956,7 +985,7 @@ function Get-ProxySetting {
     }
 
     if ($Proxy) {
-        Write-MyVerbose -Message 'Find proxy setting in environment variable "http_proxy"' -LogLevel All
+        Write-MyVerbose -Message 'Find proxy setting in environment variable "http_proxy".' -LogLevel All
         return $Proxy
     }
 
@@ -968,7 +997,7 @@ function Get-ProxySetting {
     }
 
     if ($Proxy) {
-        Write-MyVerbose -Message 'Find proxy setting in the preferences of the Internet Explorer' -LogLevel All
+        Write-MyVerbose -Message 'Find proxy setting in Internet Explorer preferences.' -LogLevel All
         return $Proxy
     }
 
@@ -1025,7 +1054,7 @@ public class WinHttp
     }
 
     if ($Proxy) {
-        Write-MyVerbose -Message 'Find proxy setting in the winhttp' -LogLevel All
+        Write-MyVerbose -Message 'Find proxy setting in WinHTTP.' -LogLevel All
         return $Proxy
     }
 }
