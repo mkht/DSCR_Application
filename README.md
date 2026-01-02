@@ -187,6 +187,9 @@ Configuration Example4
 
 ---
 ## ChangeLog
+### 4.2.0
+ + Fix an issue where files downloaded from the web might be saved with incorrect filenames.
+
 ### 4.1.2
  + Security update.
 
